@@ -12,3 +12,47 @@
 // Also consider exposing:
 //   - helper routines for forward/back substitution
 //   - residual computation utilities for testing
+
+
+#pragma once
+#include <vector>
+
+// Row-major element access helper (optional but recommended)
+inline double& at(std::vector<double>& array, int n, int i, int j);
+inline double  at(const std::vector<double>& array, int n, int i, int j);
+
+// Your existing helpers (generalized to nxn flat vector storage)
+void Printarray(const std::vector<double>& array, int n);
+void rowswap(std::vector<double>& array, int rw_1, int rw_2, int n);
+void copy(const std::vector<double>& Farray, std::vector<double>& Tarray, int n);
+void identity_mat(std::vector<double>& array, int n);
+
+// Your existing LU step functions (names preserved)
+bool pivot(std::vector<double>& array,        // U (or LU if you later go in-place)
+           std::vector<int>& piv,             // permutation vector (recommended)
+           std::vector<double>& Larray,       // only needed if storing separate L
+           int diag,
+           int n,
+           double eps);
+
+bool guassian_eliminate(std::vector<double>& array,     // U
+                        std::vector<double>& Larray,    // L
+                        int diag,
+                        int n,
+                        double eps);
+
+// Top-level factorization wrapper (calls pivot + eliminate in a loop)
+bool LU_factorize(std::vector<double>& Uarray,     // can be initialized as a copy of A
+                  std::vector<double>& Larray,
+                  std::vector<int>& piv,
+                  int n,
+                  double eps);
+
+// Solve (you’ll implement later, but define now)
+bool LU_solve(const std::vector<double>& Larray,
+              const std::vector<double>& Uarray,
+              const std::vector<int>& piv,
+              const std::vector<double>& b,
+              std::vector<double>& x,
+              int n,
+              double eps);
