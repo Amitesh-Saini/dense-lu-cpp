@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug",
+  "command": "/usr/bin/c++ -I/Users/amiteshsaini/Desktop/LU-Project/include -g -std=c++17 -arch arm64 -o CMakeFiles/lu_lib.dir/src/lu.cpp.o -c /Users/amiteshsaini/Desktop/LU-Project/src/lu.cpp",
+  "file": "/Users/amiteshsaini/Desktop/LU-Project/src/lu.cpp",
+  "output": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug/CMakeFiles/lu_lib.dir/src/lu.cpp.o"
+},
+{
+  "directory": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug",
+  "command": "/usr/bin/c++ -I/Users/amiteshsaini/Desktop/LU-Project/include -g -std=c++17 -arch arm64 -o CMakeFiles/lu_lib.dir/src/verify.cpp.o -c /Users/amiteshsaini/Desktop/LU-Project/src/verify.cpp",
+  "file": "/Users/amiteshsaini/Desktop/LU-Project/src/verify.cpp",
+  "output": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug/CMakeFiles/lu_lib.dir/src/verify.cpp.o"
+},
+{
+  "directory": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug",
+  "command": "/usr/bin/c++ -I/Users/amiteshsaini/Desktop/LU-Project/include -g -std=c++17 -arch arm64 -o CMakeFiles/lu_example.dir/examples/solve_demo.cpp.o -c /Users/amiteshsaini/Desktop/LU-Project/examples/solve_demo.cpp",
+  "file": "/Users/amiteshsaini/Desktop/LU-Project/examples/solve_demo.cpp",
+  "output": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug/CMakeFiles/lu_example.dir/examples/solve_demo.cpp.o"
+},
+{
+  "directory": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug",
+  "command": "/usr/bin/c++ -I/Users/amiteshsaini/Desktop/LU-Project/include -g -std=c++17 -arch arm64 -o CMakeFiles/bench_lu.dir/bench/bench_lu.cpp.o -c /Users/amiteshsaini/Desktop/LU-Project/bench/bench_lu.cpp",
+  "file": "/Users/amiteshsaini/Desktop/LU-Project/bench/bench_lu.cpp",
+  "output": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug/CMakeFiles/bench_lu.dir/bench/bench_lu.cpp.o"
+},
+{
+  "directory": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug",
+  "command": "/usr/bin/c++ -I/Users/amiteshsaini/Desktop/LU-Project/include -g -std=c++17 -arch arm64 -o CMakeFiles/test_lu.dir/tests/test_lu.cpp.o -c /Users/amiteshsaini/Desktop/LU-Project/tests/test_lu.cpp",
+  "file": "/Users/amiteshsaini/Desktop/LU-Project/tests/test_lu.cpp",
+  "output": "/Users/amiteshsaini/Desktop/LU-Project/out/build/debug/CMakeFiles/test_lu.dir/tests/test_lu.cpp.o"
+}
+]

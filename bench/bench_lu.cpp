@@ -8,3 +8,9 @@
 //   - Write results to data/bench.csv (size, time_ms, residual, etc.)
 //
 // Keep benchmarks separate from correctness tests.
+
+
+int main(){
+
+    return 0;
+}

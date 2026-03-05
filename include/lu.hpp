@@ -18,8 +18,13 @@
 #include <vector>
 
 // Row-major element access helper (optional but recommended)
-inline double& at(std::vector<double>& array, int n, int i, int j);
-inline double  at(const std::vector<double>& array, int n, int i, int j);
+inline double& at(std::vector<double>& array, int n, int i, int j) {
+    return array[i*n + j];
+}
+
+inline double at(const std::vector<double>& array, int n, int i, int j) {
+    return array[i*n + j];
+}
 
 // Your existing helpers (generalized to nxn flat vector storage)
 void Printarray(const std::vector<double>& array, int n);

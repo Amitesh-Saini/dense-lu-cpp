@@ -13,3 +13,9 @@
 //       * random matrices across several sizes
 //
 // Wire this into CTest via CMake.
+
+
+int main(){
+
+    return 0;
+}
