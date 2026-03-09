@@ -24,34 +24,26 @@ int main(){
 
     std::vector<double> array = {1,2,3,4,5,6,7,8,9};
 
-    std::vector<double> rray(n*n);
+    std::vector<double> A0(n*n);
+
+    A0 = array;
+
+    std::vector<int> piv(n);
+    for(int i = 0; i<n; i++){piv[i] = i;}
 
     std::vector<double> id(5*5);
 
+    pivot(A0, piv, 0, n, 1e-12);
+
+    gaussian_eliminate(A0, 0, n, 1e-12);
+
+    pivot(A0, piv, 1, n, 1e-12);
+
+   // gaussian_eliminate(A0, 1, n, 1e-12);
 
     
-    at(array, n, 2, 2) = 0;
 
-    at(array, n, 2, 2) = 9;
-
-    double x = at(array, n, 0, 0);
-
-    std::cout << x << "\n";
-
-
-    Printarray(array, n);
-
-    rowswap(array, 0, 1, 3);
-
-    Printarray(array, n);
-
-    copy(array, rray, n);
-
-    Printarray(rray, n);
-
-    identity_mat(id, 5);
-
-    Printarray(id, 5);
+    Printarray(A0, n);
 
     return 0;
 }
