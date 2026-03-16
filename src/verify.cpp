@@ -111,7 +111,7 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, int n){
 
 double residual_factorization_debug(const std::vector<double>& A0, std::vector<double>& LU_Prod, 
 const std::vector<int>& piv, std::vector<double>& PA, const std::vector<double>& LU_fac,
- std::vector<double>& diff, int n, NormType norm = NormType::Infinity){
+ std::vector<double>& diff, int n, NormType norm){
     
     apply_piv_rows(A0, piv, PA, n);
     computeLU(LU_fac, LU_Prod, n);
@@ -135,7 +135,7 @@ const std::vector<int>& piv, std::vector<double>& PA, const std::vector<double>&
 
 
 double residual_factorization_fast(const std::vector<double>& A0, const std::vector<double>& LU_fac,
-const std::vector<int>& piv, int n, NormType norm = NormType::Infinity){
+const std::vector<int>& piv, int n, NormType norm){
 
 
     double L = 0.0;

@@ -28,9 +28,9 @@ inline double at(const std::vector<double>& array, int n, int i, int j) {
 
 // Your existing helpers (generalized to nxn flat vector storage)
 void Printarray(const std::vector<double>& array, int n);
+void Printvec(const std::vector<double>& array, int n);
 void Printpiv(const std::vector<int>& array, int n);
 void rowswap(std::vector<double>& array, int rw_1, int rw_2, int n);
-void identity_mat(std::vector<double>& array, int n);
 
 // Your existing LU step functions (names preserved)
 bool pivot(std::vector<double>& array,        // U (or LU if you later go in-place)
@@ -41,15 +41,44 @@ bool pivot(std::vector<double>& array,        // U (or LU if you later go in-pla
 
 bool gaussian_eliminate(std::vector<double>& array, int rw, int n, double eps);
 
+enum class LU_factorize_Status {
+    Success,
+    PivotFailure,
+    EliminationFailure,
+    GeneralFailure
+};
+
 // Top-level factorization wrapper (calls pivot + eliminate in a loop)
-bool LU_factorize(std::vector<double>& array,     // can be initialized as a copy of A
+LU_factorize_Status LU_factorize(std::vector<double>& array,     // can be initialized as a copy of A
                   std::vector<int>& piv,
                   int n,
                   double eps);
 
-// Solve (you’ll implement later, but define now)
-bool LU_solve(const std::vector<double>& LU, // single combined matrix
+
+bool forward_substitution(const std::vector<double>& LU,
+                          const std::vector<int>& piv,
+                          const std::vector<double>& b,
+                          std::vector<double>& c,
+                          int n);
+
+bool back_substitution(const std::vector<double>& LU,
+                       const std::vector<double>& c,
+                       std::vector<double>& x,
+                       int n, double eps);
+
+
+enum class LU_Solve_Status {
+    Success,
+    ForwardSubstitutionFailure,
+    BackwardSubstitutionFailure,
+    GeneralFailure
+};
+
+
+LU_Solve_Status LU_solve(const std::vector<double>& LU,
               const std::vector<int>& piv,
               const std::vector<double>& b,
               std::vector<double>& x,
-              int n);  // eps not needed here, factorization already done
+              int n,
+              double eps);
+
