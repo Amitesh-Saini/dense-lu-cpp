@@ -23,6 +23,8 @@ void apply_piv_rows(const std::vector<double>& A,
                     const std::vector<int>& piv,
                     std::vector<double>& PA,
                     int n);
+
+
 void computeLU(const std::vector<double>& A, std::vector<double>& LU, int n);
 
 // Factorization residual: ||PA - LU|| / ||A||
@@ -36,8 +38,17 @@ double residual_factorization_fast(const std::vector<double>& A0,
                                    int n,
                                    NormType norm = NormType::Infinity);
 
-// Solve residual: ||A*x - b|| / ||b||  (or a slightly better normalization)
-double residual_solve(const std::vector<double>& A,
+
+// Relative solve residual (backward-error style):
+//     ||b - A*x|| / ( ||A||*||x|| + ||b|| )
+//
+// Uses the selected norm:
+// - Infinity:  ||b - A*x||_inf / ( ||A||_inf * ||x||_inf + ||b||_inf )
+// - Frobenius: ||b - A*x||_2   / ( ||A||_F   * ||x||_2   + ||b||_2   )
+//
+// Measures how well the computed solution x satisfies A*x = b.
+double residual_solve(const std::vector<double>& A0,
                       const std::vector<double>& x,
                       const std::vector<double>& b,
-                      int n);
+                      int n,
+                      NormType norm = NormType::Infinity);

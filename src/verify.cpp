@@ -193,3 +193,72 @@ const std::vector<int>& piv, int n, NormType norm){
     return num/denom;
 }
 
+
+// Relative solve residual (backward-error style):
+//     ||b - A*x|| / ( ||A||*||x|| + ||b|| )
+//
+// Uses the selected norm:
+// - Infinity:  ||b - A*x||_inf / ( ||A||_inf * ||x||_inf + ||b||_inf )
+// - Frobenius: ||b - A*x||_2   / ( ||A||_F   * ||x||_2   + ||b||_2   )
+//
+// Measures how well the computed solution x satisfies A*x = b.
+double residual_solve(const std::vector<double>& A0,
+                      const std::vector<double>& x,
+                      const std::vector<double>& b,
+                      int n,
+                      NormType norm) {
+
+    double A_sum = 0.0;
+    double x_sum = 0.0;
+    double b_sum = 0.0;
+    double num = 0.0;
+    double fro_norm = 0.0;
+
+    double inf_norm = 0.0;
+    double max_x_entry = 0.0;
+    double max_b_entry = 0.0;
+    double max_num_entry = 0.0;
+    double A_inf = 0.0;
+
+    for (int i = 0; i < n; i++) {
+
+        double Ax = 0.0;
+        double row_sum = 0.0;
+
+        x_sum += x[i] * x[i];
+        if (std::abs(x[i]) > max_x_entry) max_x_entry = std::abs(x[i]);
+
+        b_sum += b[i] * b[i];
+        if (std::abs(b[i]) > max_b_entry) max_b_entry = std::abs(b[i]);
+
+        for (int j = 0; j < n; j++) {
+
+            A_sum += A0[i * n + j] * A0[i * n + j];
+            row_sum += std::abs(A0[i * n + j]);
+
+            Ax += A0[i * n + j] * x[j];
+        }
+
+        if (row_sum > A_inf) A_inf = row_sum;
+
+        double r = b[i] - Ax;
+        num += r * r;
+
+        if (std::abs(r) > max_num_entry) max_num_entry = std::abs(r);
+    }
+
+    double A_norm = std::sqrt(A_sum);
+    double x_norm = std::sqrt(x_sum);
+    double b_norm = std::sqrt(b_sum);
+    double num_norm = std::sqrt(num);
+
+    double fro_denom = A_norm * x_norm + b_norm;
+    double inf_denom = A_inf * max_x_entry + max_b_entry;
+
+    fro_norm = (fro_denom == 0.0) ? num_norm : num_norm / fro_denom;
+    inf_norm = (inf_denom == 0.0) ? max_num_entry : max_num_entry / inf_denom;
+
+    if (norm == NormType::Infinity) return inf_norm;
+    return fro_norm;
+}
+
