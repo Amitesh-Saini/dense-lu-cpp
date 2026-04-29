@@ -5,19 +5,16 @@
 #include <iostream>
 #include <limits>
 
-
-
-
-void matmul(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, int n){
+void matmul(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, std::size_t n){
 
     C.resize(n*n);
 
-    for(int i = 0; i<n; ++i){
-        for(int j = 0; j<n; ++j){
+    for(std::size_t i = 0; i < n; ++i){
+        for(std::size_t j = 0; j < n; ++j){
 
             at(C, n, i, j) = 0.0;
 
-            for(int k = 0; k<n; ++k){
+            for(std::size_t k = 0; k < n; ++k){
 
                 at(C, n, i, j) += at(A, n, i, k)*at(B, n, k, j);
             }
@@ -25,47 +22,45 @@ void matmul(const std::vector<double>& A, const std::vector<double>& B, std::vec
     }
 }
 
-void matsub(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, int n){
+void matsub(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, std::size_t n){
 
     C.resize(n*n);
 
-    for(int i = 0; i<n; ++i){
-        for(int j = 0; j<n; ++j) at(C, n, i, j) = at(A, n, i, j) - at(B, n, i, j);
+    for(std::size_t i = 0; i < n; ++i){
+        for(std::size_t j = 0; j < n; ++j) at(C, n, i, j) = at(A, n, i, j) - at(B, n, i, j);
     }
 }
 
-void apply_piv_rows(const std::vector<double>& A, const std::vector<int>& piv, std::vector<double>& PA, int n){
+void apply_piv_rows(const std::vector<double>& A, const std::vector<std::size_t>& piv, std::vector<double>& PA, std::size_t n){
 
     PA.resize(n*n);
 
-    for(int i = 0; i<n; i++){
-        for(int j = 0; j<n; j++){
+    for(std::size_t i = 0; i < n; i++){
+        for(std::size_t j = 0; j < n; j++){
 
             at(PA, n, i, j) = at(A, n, piv[i], j);
         }
     }
 }
 
-double fro_norm(const std::vector<double>& A, int n){
+double fro_norm(const std::vector<double>& A, std::size_t n){
 
     double sum = 0.0;
 
-    for(int i = 0; i<n*n; i++) sum += A[i]*A[i];
+    for(std::size_t i = 0; i < n*n; i++) sum += A[i]*A[i];
 
     return std::sqrt(sum);
 }
 
-
-
-double inf_norm(const std::vector<double>& A, int n){
+double inf_norm(const std::vector<double>& A, std::size_t n){
 
     double max = 0.0;
 
-    for(int i = 0; i<n; i++){
+    for(std::size_t i = 0; i < n; i++){
 
         double sum = 0; 
 
-        for(int j = 0; j<n; j++) sum += std::abs(A[i*n + j]);
+        for(std::size_t j = 0; j < n; j++) sum += std::abs(A[i*n + j]);
         
         if(sum > max) max = sum;
     }
@@ -73,10 +68,7 @@ double inf_norm(const std::vector<double>& A, int n){
     return max;
 }
 
-
-
-
-void computeLU(const std::vector<double>& A, std::vector<double>& LU, int n){
+void computeLU(const std::vector<double>& A, std::vector<double>& LU, std::size_t n){
 
      double L = 0.0;
      double U = 0.0;
@@ -84,12 +76,12 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, int n){
      LU.resize(n*n);
 
    
-    for(int i = 0; i<n; ++i){
-        for(int j = 0; j<n; ++j){
+    for(std::size_t i = 0; i < n; ++i){
+        for(std::size_t j = 0; j < n; ++j){
 
             double sum = 0.0;
 
-            for(int k = 0; k <= std::min(i,j); ++k){
+            for(std::size_t k = 0; k <= std::min(i,j); ++k){
 
                 if(k == i) L = 1.0;
                 else if (k < i) L = at(A, n, i, k);
@@ -106,12 +98,9 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, int n){
     }
 }
 
-
-
-
 double residual_factorization_debug(const std::vector<double>& A0, std::vector<double>& LU_Prod, 
-const std::vector<int>& piv, std::vector<double>& PA, const std::vector<double>& LU_fac,
- std::vector<double>& diff, int n, NormType norm){
+const std::vector<std::size_t>& piv, std::vector<double>& PA, const std::vector<double>& LU_fac,
+ std::vector<double>& diff, std::size_t n, NormType norm){
     
     apply_piv_rows(A0, piv, PA, n);
     computeLU(LU_fac, LU_Prod, n);
@@ -130,13 +119,10 @@ const std::vector<int>& piv, std::vector<double>& PA, const std::vector<double>&
         }
 
     return num/denom;
-
 }
 
-
 double residual_factorization_fast(const std::vector<double>& A0, const std::vector<double>& LU_fac,
-const std::vector<int>& piv, int n, NormType norm){
-
+const std::vector<std::size_t>& piv, std::size_t n, NormType norm){
 
     double L = 0.0;
     double U = 0.0;
@@ -145,12 +131,11 @@ const std::vector<int>& piv, int n, NormType norm){
 
     double sum_Total = 0.0;
 
-
-    for(int i = 0; i<n; ++i){
+    for(std::size_t i = 0; i < n; ++i){
 
         double row_sum = 0.0;
 
-        for(int j = 0; j<n; ++j){
+        for(std::size_t j = 0; j < n; ++j){
 
             double PA_ij = at(A0, n, piv[i], j);
 
@@ -158,7 +143,7 @@ const std::vector<int>& piv, int n, NormType norm){
 
             double sum = 0.0;
 
-            for(int k = 0; k <= std::min(i,j); ++k){
+            for(std::size_t k = 0; k <= std::min(i,j); ++k){
 
                 if(k == i) L = 1.0;
                 else if (k < i) L = at(LU_fac, n, i, k);
@@ -193,7 +178,6 @@ const std::vector<int>& piv, int n, NormType norm){
     return num/denom;
 }
 
-
 // Relative solve residual (backward-error style):
 //     ||b - A*x|| / ( ||A||*||x|| + ||b|| )
 //
@@ -205,7 +189,7 @@ const std::vector<int>& piv, int n, NormType norm){
 double residual_solve(const std::vector<double>& A0,
                       const std::vector<double>& x,
                       const std::vector<double>& b,
-                      int n,
+                      std::size_t n,
                       NormType norm) {
 
     double A_sum = 0.0;
@@ -220,7 +204,7 @@ double residual_solve(const std::vector<double>& A0,
     double max_num_entry = 0.0;
     double A_inf = 0.0;
 
-    for (int i = 0; i < n; i++) {
+    for (std::size_t i = 0; i < n; i++) {
 
         double Ax = 0.0;
         double row_sum = 0.0;
@@ -231,7 +215,7 @@ double residual_solve(const std::vector<double>& A0,
         b_sum += b[i] * b[i];
         if (std::abs(b[i]) > max_b_entry) max_b_entry = std::abs(b[i]);
 
-        for (int j = 0; j < n; j++) {
+        for (std::size_t j = 0; j < n; j++) {
 
             A_sum += A0[i * n + j] * A0[i * n + j];
             row_sum += std::abs(A0[i * n + j]);
@@ -261,4 +245,3 @@ double residual_solve(const std::vector<double>& A0,
     if (norm == NormType::Infinity) return inf_norm;
     return fro_norm;
 }
-

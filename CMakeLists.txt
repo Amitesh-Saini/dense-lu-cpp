@@ -8,6 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Useful for VS Code IntelliSense / clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(Eigen3 REQUIRED CONFIG)
+
 # ---- Core library ----
 add_library(lu_lib
     src/lu.cpp
@@ -46,10 +48,11 @@ if(BUILD_TESTS)
 
     add_executable(test_lu
         tests/test_lu.cpp
+        tests/test_lu_utils.cpp
     )
 
     target_link_libraries(test_lu
-        PRIVATE lu_lib
+        PRIVATE lu_lib Eigen3::Eigen
     )
 
     add_test(NAME test_lu COMMAND test_lu)

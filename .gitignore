@@ -37,6 +37,40 @@
 *.out
 *.app
 
-# debug information files
+# Local build executables with no extension
+lu_example
+test_lu
+bench_lu
+
+# Debug information files
 *.dwo
-build/
+*.dSYM/
+
+# CMake / build directories
+/build/
+/out/build/
+cmake-build-*/
+
+# CMake generated files
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+
+# Ninja generated files
+.ninja_deps
+.ninja_log
+build.ninja
+
+# Make generated files
+Makefile
+
+# macOS files
+.DS_Store
+
+# VS Code local settings
+.vscode/*
+!.vscode/settings.json
+!.vscode/c_cpp_properties.json
+!.vscode/extensions.json

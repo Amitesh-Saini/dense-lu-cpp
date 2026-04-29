@@ -11,7 +11,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "BUILD_TESTS": "ON"
+        "BUILD_TESTS": "ON",
+        "Eigen3_DIR": "/opt/homebrew/share/eigen3/cmake"
       }
     },
     {
@@ -22,7 +23,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "BUILD_TESTS": "OFF"
+        "BUILD_TESTS": "OFF",
+        "Eigen3_DIR": "/opt/homebrew/share/eigen3/cmake"
       }
     }
   ],
