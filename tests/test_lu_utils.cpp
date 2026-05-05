@@ -321,10 +321,18 @@ std::vector<double> make_near_singular_3x3()
 
 std::vector<double> make_hilbert_matrix(std::size_t n)
 {
-    std::vector<double> H(n*n);
-    for(std::size_t i = 0; i < n; i++)
-        for(std::size_t j = 0; j < n; j++)
-            H[i*n+j] = 1.0 / (i + j + 1.0);
+    if (n == 0) {
+        throw std::invalid_argument("make_hilbert_matrix: n must be greater than 0");
+    }
+
+    std::vector<double> H(n * n);
+
+    for (std::size_t i = 0; i < n; ++i) {
+        for (std::size_t j = 0; j < n; ++j) {
+            H[i * n + j] = 1.0 / static_cast<double>(i + j + 1);
+        }
+    }
+
     return H;
 }
  

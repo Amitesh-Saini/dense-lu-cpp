@@ -185,7 +185,8 @@ bool back_substitution(const std::vector<double>& LU, const std::vector<double>&
     return true;
 }
 
-LU_Solve_Status LU_solve(const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& b, std::vector<double>& x, std::size_t n, double eps){
+LU_Solve_Status LU_solve(const std::vector<double>& LU, const std::vector<std::size_t>& piv, 
+ const std::vector<double>& b, std::vector<double>& x, std::size_t n, double eps){
 
     if(eps <= 0) return LU_Solve_Status::GeneralFailure;
     
