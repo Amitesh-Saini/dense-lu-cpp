@@ -34,16 +34,18 @@ AccuracyResult compute_custom_lu_accuracy(const LUProblem& problem, const std::v
 
 TimingResult benchmark_custom_factorization_once(const LUProblem& problem, std::size_t trial, const BenchmarkConfig& config){
 
-
     const std::size_t reps = checked_repetitions(repetitions_for_phase(config, BenchmarkPhase::Factorization));
 
     LU_factorize_Status status = LU_factorize_Status::GeneralFailure;
 
     double total_time_ms = 0.0;
 
+    std::vector<double> LU(problem.n * problem.n);
+    std::vector<std::size_t> piv(problem.n);
+
     for (std::size_t rep = 0; rep < reps; ++rep) {
-        std::vector<double> LU = problem.A0;
-        std::vector<std::size_t> piv = problem.piv;
+        std::copy(problem.A0.begin(), problem.A0.end(), LU.begin());
+        std::copy(problem.piv.begin(), problem.piv.end(), piv.begin());
 
         const auto start = benchmark_now();
 
@@ -126,10 +128,13 @@ TimingResult benchmark_custom_full_solve_once(const LUProblem& problem, std::siz
 
     double total_time_ms = 0.0;
 
+    std::vector<double> LU(problem.n * problem.n);
+    std::vector<std::size_t> piv(problem.n);
+    std::vector<double> x_computed(problem.n);
+
     for (std::size_t rep = 0; rep < reps; ++rep) {
-        std::vector<double> LU = problem.A0;
-        std::vector<std::size_t> piv = problem.piv;
-        std::vector<double> x_computed(problem.n);
+        std::copy(problem.A0.begin(), problem.A0.end(), LU.begin());
+        std::copy(problem.piv.begin(), problem.piv.end(), piv.begin());
 
         const auto start = benchmark_now();
 
