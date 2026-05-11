@@ -14,7 +14,6 @@ find_package(Eigen3 REQUIRED CONFIG)
 add_library(lu_lib
     src/lu.cpp
     src/verify.cpp
-    # src/Matrix.cpp   # only if you create it later
 )
 
 target_include_directories(lu_lib
@@ -28,16 +27,53 @@ add_executable(lu_example
 )
 
 target_link_libraries(lu_example
-    PRIVATE lu_lib
+    PRIVATE
+        lu_lib
 )
 
 # ---- Bench ----
 add_executable(bench_lu
     bench/bench_lu.cpp
+
+    bench/bench_common.cpp
+    bench/bench_generators.cpp
+    bench/bench_custom_lu.cpp
+    bench/bench_multiple_rhs.cpp
+    bench/bench_residuals.cpp
+    bench/bench_eigen_utils.cpp
+    bench/bench_csv.cpp
+
+    tests/test_lu_utils.cpp
+)
+
+target_include_directories(bench_lu
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/bench
+        ${CMAKE_SOURCE_DIR}/tests
 )
 
 target_link_libraries(bench_lu
-    PRIVATE lu_lib
+    PRIVATE
+        lu_lib
+        Eigen3::Eigen
+)
+
+# Windows memory measurement uses GetProcessMemoryInfo from Psapi.
+if(WIN32)
+    target_link_libraries(bench_lu
+        PRIVATE
+            Psapi
+    )
+endif()
+
+# ---- Theoretical memory CSV generator ----
+add_executable(bench_make_theoretical_memory
+    bench/bench_make_theoretical_memory.cpp
+)
+
+target_include_directories(bench_make_theoretical_memory
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/bench
 )
 
 # ---- Tests ----
@@ -52,7 +88,9 @@ if(BUILD_TESTS)
     )
 
     target_link_libraries(test_lu
-        PRIVATE lu_lib Eigen3::Eigen
+        PRIVATE
+            lu_lib
+            Eigen3::Eigen
     )
 
     add_test(NAME test_lu COMMAND test_lu)

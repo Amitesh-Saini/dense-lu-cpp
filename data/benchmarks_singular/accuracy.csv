@@ -1,0 +1,11 @@
+implementation,matrix_type,n,trial,factorization_residual,solve_residual,solution_error_inf,solution_error_l2,status
+custom_lu,singular,8,0,nan,nan,nan,nan,factorization_pivot_failure
+custom_lu,singular,16,0,nan,nan,nan,nan,factorization_pivot_failure
+custom_lu,singular,32,0,nan,nan,nan,nan,factorization_pivot_failure
+custom_lu,singular,64,0,nan,nan,nan,nan,factorization_pivot_failure
+custom_lu,singular,128,0,nan,nan,nan,nan,factorization_pivot_failure
+eigen_partial_piv_lu,singular,8,0,nan,0,0.236899,0.142422,success
+eigen_partial_piv_lu,singular,16,0,nan,0,0.345053,0.148523,success
+eigen_partial_piv_lu,singular,32,0,nan,0,0.856296,0.24666,success
+eigen_partial_piv_lu,singular,64,0,nan,0,0.871064,0.183569,success
+eigen_partial_piv_lu,singular,128,0,nan,0,0.227888,0.0364055,success

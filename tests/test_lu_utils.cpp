@@ -26,6 +26,8 @@ static std::mt19937& test_rng()
 
 
 void matrix_vector_mul(const std::vector<double>& A, const std::vector<double>& x, std::vector<double>& b, std::size_t n){
+
+    b.resize(n);
     
     for(std::size_t i = 0; i < n; i++){
         

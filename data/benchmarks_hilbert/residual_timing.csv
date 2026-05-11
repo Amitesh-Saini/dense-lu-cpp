@@ -1,0 +1,7 @@
+matrix_type,phase,norm,n,trial,time_ms,residual_value
+hilbert,residual_factorization_debug,inf_norm,4,0,0.001666,0
+hilbert,residual_factorization_fast,inf_norm,4,0,0.000791,0
+hilbert,residual_solve,inf_norm,4,0,0.000292,2.04084e-17
+hilbert,residual_factorization_debug,inf_norm,8,0,0.004459,2.55308e-17
+hilbert,residual_factorization_fast,inf_norm,8,0,0.003291,2.55308e-17
+hilbert,residual_solve,inf_norm,8,0,0.000708,3.64563e-17
