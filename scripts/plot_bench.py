@@ -197,6 +197,9 @@ def load_csvs(data_dir: Path = DATA_DIR) -> dict[str, pd.DataFrame]:
 
         "theoretical_memory_single_rhs":   data_dir / "benchmarks_theoretical_memory" / "theoretical_memory_single_rhs.csv",
         "theoretical_memory_multiple_rhs": data_dir / "benchmarks_theoretical_memory" / "theoretical_memory_multiple_rhs.csv",
+
+        # Large-n suite (n = 1024, 2048 — single trial, no residual timing)
+        "large_n_timing": data_dir / "benchmarks_large_n" / "timing.csv",
     }
 
     data: dict[str, pd.DataFrame] = {}
@@ -651,6 +654,72 @@ def plot_multiple_rhs_solve_loop_time(data: dict[str, pd.DataFrame]) -> None:
     _save(ax, "multiple_rhs_solve_loop_time.png")
 
 
+def plot_large_n_factorization_comparison(data: dict[str, pd.DataFrame]) -> None:
+    """
+    Full-range factorization comparison: Custom LU vs Eigen, n = 8 … 2048.
+
+    Merges the main benchmark suite (n = 8 … 512) with the large-n suite
+    (n = 1024, 2048) so the reader sees the complete scaling curve in one
+    figure.  The O(n³) reference line is anchored to the midpoint of the
+    Custom LU series so it sits visually between the two data curves rather
+    than collapsing onto either endpoint.
+    """
+    # Merge main and large-n timing; keep only random_dense factorization rows.
+    combined = pd.concat(
+        [data["main_timing"], data["large_n_timing"]],
+        ignore_index=True,
+    )
+    combined = filter_success(combined)
+    combined = combined[
+        (combined["matrix_type"] == "random_dense")
+        & (combined["phase"] == "factorization")
+    ]
+
+    summary = median_by_group(
+        combined,
+        group_cols=["implementation", "matrix_type", "phase", "n"],
+        value_cols=["time_ms"],
+    )
+
+    fig, ax = plt.subplots()
+
+    for impl, group in summary.groupby("implementation"):
+        group = group.sort_values("n")
+        ax.plot(
+            group["n"], group["time_ms"],
+            marker=MARKERS.get(impl, "o"),
+            color=COLOURS.get(impl),
+            label=IMPLEMENTATION_LABELS.get(impl, impl),
+        )
+
+    # Anchor the O(n^3) line to the midpoint of the Custom LU series.
+    # This avoids making the reference line depend too heavily on either
+    # the smallest noisy sizes or the largest one-trial sizes.
+    custom = summary[summary["implementation"] == "custom_lu"].sort_values("n")
+    if not custom.empty:
+        ns_arr  = custom["n"].to_numpy(float)
+        tms_arr = custom["time_ms"].to_numpy(float)
+        mid     = len(ns_arr) // 2
+        x_ref, y_ref = ns_arr[mid], tms_arr[mid]
+        scale   = y_ref / x_ref ** 3
+        y_ref_line = scale * ns_arr ** 3
+        ax.plot(
+            ns_arr, y_ref_line,
+            color="0.45", linestyle=":", linewidth=1.0,
+            label=r"$O(n^3)$ reference", zorder=1,
+        )
+
+    ns = sorted(summary["n"].unique())
+    _log2_x_ticks(ax, ns)
+    ax.set_yscale("log")
+    ax.set_xlabel("Matrix size $n$")
+    ax.set_ylabel("Median factorization time (ms)")
+    ax.set_title(r"LU Factorization Scaling: Custom vs.\ Eigen ($n = 8 \ldots 2048$)")
+    ax.legend()
+
+    _save(ax, "large_n_factorization_comparison.png")
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -670,6 +739,7 @@ def main() -> None:
     plot_residual_timing_vs_n(data)
     plot_theoretical_memory_vs_n(data)
     plot_multiple_rhs_solve_loop_time(data)
+    plot_large_n_factorization_comparison(data)
 
     print("Done.")
 

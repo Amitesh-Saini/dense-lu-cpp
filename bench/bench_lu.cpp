@@ -269,6 +269,42 @@ int main()
         );
 
 
+
+        // ============================================================
+        // Large-n comparison suite
+        // Larger one-trial benchmark for custom LU vs Eigen.
+        // Residual benchmarks are disabled because PA - LU verification
+        // at n = 1024 and n = 2048 is very expensive.
+        // ============================================================
+
+        BenchmarkConfig large_n_config;
+
+        large_n_config.sizes = {
+            1024, 2048
+        };
+
+        large_n_config.matrix_types = {
+            MatrixType::RandomDense,
+            MatrixType::DiagonallyDominant
+        };
+
+        large_n_config.trials = 1;
+
+        // Keep repetitions low because these runs are expensive.
+        large_n_config.factorization_repetitions = 1;
+        large_n_config.solve_repetitions = 5;
+        large_n_config.full_solve_repetitions = 1;
+        large_n_config.residual_repetitions = 1;
+        large_n_config.multiple_rhs_repetitions = 1;
+
+        large_n_config.eps = 1e-12;
+        large_n_config.norm = NormType::Infinity;
+        large_n_config.base_seed = 314159265;
+        large_n_config.output_dir = "data/benchmarks_large_n";
+
+        run_benchmark_suite("large_n_comparison", large_n_config, false);
+
+
         std::cout << "\nAll benchmark suites complete.\n";
 
         return 0;

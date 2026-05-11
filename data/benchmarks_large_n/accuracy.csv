@@ -1,0 +1,9 @@
+implementation,matrix_type,n,trial,factorization_residual,solve_residual,solution_error_inf,solution_error_l2,status
+custom_lu,random_dense,1024,0,4.29671e-15,2.61013e-15,2.23113e-12,1.12156e-12,success
+custom_lu,diagonally_dominant,1024,0,3.06406e-15,1.74516e-15,5.6635e-15,1.55475e-15,success
+custom_lu,random_dense,2048,0,7.10024e-15,4.91214e-15,1.08302e-12,5.08822e-13,success
+custom_lu,diagonally_dominant,2048,0,4.87365e-15,2.51674e-15,7.99442e-15,2.17421e-15,success
+eigen_partial_piv_lu,random_dense,1024,0,nan,1.02497e-15,4.84651e-13,2.41331e-13,success
+eigen_partial_piv_lu,diagonally_dominant,1024,0,nan,9.07485e-16,2.77623e-15,1.06038e-15,success
+eigen_partial_piv_lu,random_dense,2048,0,nan,2.05817e-15,3.77933e-13,1.92599e-13,success
+eigen_partial_piv_lu,diagonally_dominant,2048,0,nan,1.55967e-15,4.77445e-15,1.55742e-15,success
