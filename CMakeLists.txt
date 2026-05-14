@@ -21,12 +21,21 @@ target_include_directories(lu_lib
         ${CMAKE_SOURCE_DIR}/include
 )
 
-# ---- Example ----
+# ---- Examples ----
 add_executable(lu_example
     examples/solve_demo.cpp
 )
 
 target_link_libraries(lu_example
+    PRIVATE
+        lu_lib
+)
+
+add_executable(steady_heat_1d
+    examples/steady_heat_1d.cpp
+)
+
+target_link_libraries(steady_heat_1d
     PRIVATE
         lu_lib
 )

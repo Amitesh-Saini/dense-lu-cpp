@@ -335,6 +335,24 @@ int main()
         }
     }
 
+
+    {
+    std::vector<double> LU;
+    std::vector<std::size_t> piv;
+
+    std::size_t bad_n = static_cast<std::size_t>(-1);
+
+    auto status = LU_factorize(LU, piv, bad_n, pivot_tol);
+
+    if (status != LU_factorize_Status::GeneralFailure) {
+        failed_tests.push_back("contract_negative_n_converted_to_size_t");
+        }
+    else {
+        std::cout << "  negative n converted to size_t -> GeneralFailure  PASS\n";
+         }
+    
+    }
+
     if(failed_tests.empty()) {
         std::cout << "All tests passed.\n";
         return 0;

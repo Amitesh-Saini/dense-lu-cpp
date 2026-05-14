@@ -60,9 +60,9 @@ PHASE_LABELS = {
     "factorization":                   "Factorization",
     "solve":                           "Solve",
     "full_solve":                      "Full solve",
-    "residual_factorization_debug":    r"Fact. residual (debug, $\|PA - LU\|$)",
-    "residual_factorization_fast":     r"Fact. residual (fast)",
-    "residual_solve":                  r"Solve residual ($\|Ax - b\|$)",
+    "residual_factorization_debug":    r"Fact. residual (debug, $\|PA - LU\|_\infty$)",
+    "residual_factorization_fast":     r"Fact. residual (fast, $\|PA - LU\|_\infty$)",
+    "residual_solve":                  r"Solve residual ($\|Ax - b\|_\infty$)",
     "multiple_rhs":                    "Multiple RHS",
     "multiple_rhs_residual":           "Multiple RHS residual",
 }
@@ -714,7 +714,7 @@ def plot_large_n_factorization_comparison(data: dict[str, pd.DataFrame]) -> None
     ax.set_yscale("log")
     ax.set_xlabel("Matrix size $n$")
     ax.set_ylabel("Median factorization time (ms)")
-    ax.set_title(r"LU Factorization Scaling: Custom vs.\ Eigen ($n = 8 \ldots 2048$)")
+    ax.set_title(r"LU Factorization Scaling: Custom vs. Eigen ($n = 8 \ldots 2048$)")
     ax.legend()
 
     _save(ax, "large_n_factorization_comparison.png")
