@@ -1,3 +1,12 @@
+// bench_multiple_rhs.hpp
+// Purpose:
+//   Declare custom LU multiple-RHS benchmark routines.
+//
+// Contents:
+//   - Multiple-RHS timing for custom LU.
+//   - Per-case multiple-RHS benchmark runner.
+//   - Full-suite multiple-RHS benchmark runner.
+
 #pragma once
 
 #include "bench_types.hpp"
@@ -9,7 +18,7 @@
 
 // Multiple rhs benchmark operations
 
- // Benchmarks custom LU solving many RHS after one factorization.
+// Benchmarks custom LU solving many RHS after one factorization.
 // What it does:
 //   Builds X_true and B = A*X_true, factorizes A once, then times solving each
 //   RHS column using LU_solve.
@@ -17,8 +26,8 @@
 //   Demonstrates the main advantage of LU: reusing one factorization for many
 //   right-hand sides.
 
-MultipleRHSResult benchmark_custom_multiple_rhs_once(const LUProblem& problem, std::size_t nrhs, std::size_t trial,
- NormType norm, std::uint32_t seed, const BenchmarkConfig& config);
+MultipleRHSResult benchmark_custom_multiple_rhs_once(
+    const LUProblem& problem, std::size_t nrhs, std::size_t trial, NormType norm, std::uint32_t seed, const BenchmarkConfig& config);
 
 
 
@@ -29,8 +38,9 @@ MultipleRHSResult benchmark_custom_multiple_rhs_once(const LUProblem& problem, s
 // Why needed:
 //   Keeps the top-level benchmark loop clean.
 
-void run_custom_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results);
+void run_custom_multiple_rhs_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<MultipleRHSResult>& multiple_rhs_results, 
+    std::vector<MemoryCheckpoint>& memory_results);
 
 
 
@@ -41,5 +51,5 @@ void run_custom_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, 
 // Why needed:
 //   Provides the top-level custom LU multiple-RHS benchmark entry point.
 
-void run_custom_multiple_rhs_benchmarks(const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results,
- std::vector<MemoryCheckpoint>& memory_results);
+void run_custom_multiple_rhs_benchmarks(
+    const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results);

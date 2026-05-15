@@ -1,5 +1,15 @@
-#include "bench_generators.hpp"
+// bench_generators.cpp
+// Purpose:
+//   Implement benchmark problem-generation utilities.
+//
+// Implementation notes:
+//   - Uses seeded random generation so benchmark cases are reproducible.
+//   - Builds matrix families that test normal performance, pivoting behavior,
+//     ill-conditioning, near-singularity, and expected factorization failure.
+//   - Constructs known-solution systems by generating x_true and forming b = A*x_true.
+//   - Provides multiple-RHS helpers using column-major RHS storage.
 
+#include "bench_generators.hpp"
 #include "lu.hpp"
 #include "verify.hpp"
 #include "test_lu_utils.hpp"
@@ -11,7 +21,6 @@
 #include <stdexcept>
 
 // Problem setup helpers
-
 
 std::vector<double> make_pivot_stress_matrix(std::size_t n){
 
@@ -96,7 +105,7 @@ std::vector<double> make_singular_matrix(std::size_t n){
 std::vector<double> generate_seeded_random_dense_matrix(double lower_bound, double upper_bound, std::size_t n, std::uint32_t seed){
 
     if (n == 0) {
-    throw std::invalid_argument("generate_seeded_random_dense_matrix: n must be greater than 0");
+        throw std::invalid_argument("generate_seeded_random_dense_matrix: n must be greater than 0");
     }
 
     std::mt19937 gen(seed);
@@ -114,7 +123,7 @@ std::vector<double> generate_seeded_random_dense_matrix(double lower_bound, doub
 std::vector<double> generate_seeded_random_vector(double lower_bound, double upper_bound, std::size_t n, std::uint32_t seed){
 
     if (n == 0) {
-    throw std::invalid_argument("generate_seeded_random_vector: n must be greater than 0");
+        throw std::invalid_argument("generate_seeded_random_vector: n must be greater than 0");
     }
 
     std::mt19937 gen(seed);
@@ -129,9 +138,8 @@ std::vector<double> generate_seeded_random_vector(double lower_bound, double upp
     return x;
 }
 
-std::vector<double> generate_seeded_random_diagonally_dominant_matrix(double lower_bound, double upper_bound, std::size_t n,
- double margin, std::uint32_t seed){
-
+std::vector<double> generate_seeded_random_diagonally_dominant_matrix(
+    double lower_bound, double upper_bound, std::size_t n, double margin, std::uint32_t seed){
 
     if (n == 0) {
         throw std::invalid_argument("generate_seeded_random_diagonally_dominant_matrix: n must be greater than 0");
@@ -162,17 +170,17 @@ std::vector<double> generate_seeded_random_diagonally_dominant_matrix(double low
     }
 
     return A;
- }
+}
 
 
- std::vector<double> make_multiple_x_true(std::size_t n, std::size_t nrhs, double lower, double upper, std::uint32_t seed){
+std::vector<double> make_multiple_x_true(std::size_t n, std::size_t nrhs, double lower, double upper, std::uint32_t seed){
 
     if (n == 0) {
-    throw std::invalid_argument("make_multiple_x_true: n must be greater than 0");
+        throw std::invalid_argument("make_multiple_x_true: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("make_multiple_x_true: nrhs must be greater than 0");
+        throw std::invalid_argument("make_multiple_x_true: nrhs must be greater than 0");
     }
 
     std::mt19937 gen(seed);
@@ -186,21 +194,21 @@ std::vector<double> generate_seeded_random_diagonally_dominant_matrix(double low
     }
 
     return X_true;
- }
+}
 
 
- void make_multiple_rhs(const std::vector<double>& A, const std::vector<double>& X_true, std::vector<double>& B, std::size_t n, std::size_t nrhs){
+void make_multiple_rhs(const std::vector<double>& A, const std::vector<double>& X_true, std::vector<double>& B, std::size_t n, std::size_t nrhs){
 
     if (n == 0) {
-    throw std::invalid_argument("make_multiple_rhs: n must be greater than 0");
+        throw std::invalid_argument("make_multiple_rhs: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("make_multiple_rhs: nrhs must be greater than 0");
+        throw std::invalid_argument("make_multiple_rhs: nrhs must be greater than 0");
     }
 
     if (A.size() != n * n) {
-    throw std::invalid_argument("make_multiple_rhs: A size mismatch");
+        throw std::invalid_argument("make_multiple_rhs: A size mismatch");
     }
 
     if (X_true.size() != n * nrhs) {
@@ -225,21 +233,21 @@ std::vector<double> generate_seeded_random_diagonally_dominant_matrix(double low
             B[j + i*n] = inner_prod;
         }
     }
- }
+}
 
 
 double multiple_rhs_solution_error_inf(const std::vector<double>& X_true, const std::vector<double>& X_computed, std::size_t n, std::size_t nrhs){
 
     if (X_true.size() != n * nrhs || X_computed.size() != n * nrhs) {
-    throw std::invalid_argument("multiple_rhs_solution_error_inf: size mismatch");
+        throw std::invalid_argument("multiple_rhs_solution_error_inf: size mismatch");
     }
 
     if (n == 0) {
-    throw std::invalid_argument("multiple_rhs_solution_error_inf: n must be greater than 0");
+        throw std::invalid_argument("multiple_rhs_solution_error_inf: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("multiple_rhs_solution_error_inf: nrhs must be greater than 0");
+        throw std::invalid_argument("multiple_rhs_solution_error_inf: nrhs must be greater than 0");
     }
 
     return relative_inf_error(X_true, X_computed, n * nrhs);
@@ -252,15 +260,15 @@ double multiple_rhs_solution_error_inf(const std::vector<double>& X_true, const 
 double multiple_rhs_solution_error_l2(const std::vector<double>& X_true, const std::vector<double>& X_computed, std::size_t n, std::size_t nrhs){
 
     if (n == 0) {
-    throw std::invalid_argument("multiple_rhs_solution_error_l2: n must be greater than 0");
+        throw std::invalid_argument("multiple_rhs_solution_error_l2: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("multiple_rhs_solution_error_l2: nrhs must be greater than 0");
+        throw std::invalid_argument("multiple_rhs_solution_error_l2: nrhs must be greater than 0");
     }
 
     if (X_true.size() != n * nrhs || X_computed.size() != n * nrhs) {
-    throw std::invalid_argument("multiple_rhs_solution_error_l2: size mismatch");
+        throw std::invalid_argument("multiple_rhs_solution_error_l2: size mismatch");
     }
 
     return relative_l2_error(X_true, X_computed, n*nrhs);

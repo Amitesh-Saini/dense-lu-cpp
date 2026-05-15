@@ -1,3 +1,13 @@
+// bench_lu.cpp
+// Purpose:
+//   Main benchmark driver for the LU project.
+//
+// Implementation notes:
+//   - Configures and runs multiple benchmark suites.
+//   - Compares custom LU against Eigen PartialPivLU.
+//   - Writes timing, accuracy, residual, memory, and multiple-RHS CSV files.
+//   - Separates normal performance, stress, Hilbert, singular, and multiple-RHS cases.
+
 #include "bench_common.hpp"
 #include "bench_generators.hpp"
 #include "bench_custom_lu.hpp"

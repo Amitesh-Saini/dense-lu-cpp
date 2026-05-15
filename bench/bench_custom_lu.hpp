@@ -1,3 +1,14 @@
+// bench_custom_lu.hpp
+// Purpose:
+//   Declare benchmark routines for the custom LU implementation.
+//
+// Contents:
+//   - Accuracy computation for custom LU.
+//   - Factorization-only timing.
+//   - Solve-only timing.
+//   - Full factorization-plus-solve timing.
+//   - Per-case and full-suite custom LU benchmark runners.
+
 #pragma once
 
 #include "bench_types.hpp"
@@ -23,13 +34,9 @@
 //   correctness for every benchmark case.
 
 
-AccuracyResult compute_custom_lu_accuracy(const LUProblem& problem, const std::vector<double>& LU,
- const std::vector<std::size_t>& piv, const std::vector<double>& x_computed, 
- std::size_t trial, NormType norm, const std::string& status);
-
-
-
-
+AccuracyResult compute_custom_lu_accuracy(
+    const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& x_computed, 
+    std::size_t trial, NormType norm, const std::string& status);
 
 
 // Custom LU benchmark operations
@@ -55,9 +62,9 @@ TimingResult benchmark_custom_factorization_once(const LUProblem& problem, std::
 //   Measures forward/backward substitution cost separately from factorization.
 
 
-TimingResult benchmark_custom_solve_once(const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, std::size_t trial,
- const BenchmarkConfig& config);
-
+TimingResult benchmark_custom_solve_once(
+    const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, std::size_t trial, 
+    const BenchmarkConfig& config);
 
 
 // Benchmarks custom full solve.
@@ -65,8 +72,6 @@ TimingResult benchmark_custom_solve_once(const LUProblem& problem, const std::ve
 //   Times the full operation of factorization followed by solve.
 // Why needed:
 //   Measures the practical end-to-end cost of solving one dense system Ax = b
-
-
 //   from scratch.
 
 
@@ -83,8 +88,9 @@ TimingResult benchmark_custom_full_solve_once(const LUProblem& problem, std::siz
 //   single driver function.
 
 
-void run_custom_lu_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results);
+void run_custom_lu_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results, 
+    std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results);
 
 
 
@@ -95,5 +101,6 @@ void run_custom_lu_case(const BenchmarkConfig& config, std::size_t n, MatrixType
 // Why needed:
 //   Provides the top-level custom LU benchmark entry point for benchmark_lu.cpp.
 
-void run_custom_lu_benchmarks(const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results,
- std::vector<MemoryCheckpoint>& memory_results);
+void run_custom_lu_benchmarks(
+    const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, 
+    std::vector<MemoryCheckpoint>& memory_results);

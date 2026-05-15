@@ -1,12 +1,22 @@
+// bench_types.hpp
+// Purpose:
+//   Define the shared benchmark enums, configuration structs, and result structs.
+//
+// Contents:
+//   - Matrix and implementation labels.
+//   - Benchmark phase labels.
+//   - Benchmark configuration options.
+//   - Timing, accuracy, memory, residual, and multiple-RHS result records.
+
 #pragma once
 
-#include "test_lu_utils.hpp"
-
+#include "verify.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
+
 
 // Benchmark enums
 
@@ -60,8 +70,7 @@ enum class BenchmarkPhase {
 //   Multiple RHS benchmarks need extra fields like nrhs, factorization time,
 //   total solve time, and time per RHS that do not fit cleanly into TimingResult.
 
-struct MultipleRHSResult {Implementation implementation; MatrixType matrix_type; std::size_t n; std::size_t nrhs;
- std::size_t trial;
+struct MultipleRHSResult {Implementation implementation; MatrixType matrix_type; std::size_t n; std::size_t nrhs; std::size_t trial;
 
     double factorization_time_ms;
     double solve_kernel_time_ms;

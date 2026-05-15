@@ -1,3 +1,13 @@
+// bench_eigen_utils.hpp
+// Purpose:
+//   Declare Eigen conversion helpers and Eigen benchmark routines.
+//
+// Contents:
+//   - Conversions between flat std::vector storage and Eigen matrices/vectors.
+//   - Eigen PartialPivLU factorization, solve, and full-solve benchmarks.
+//   - Eigen accuracy computation.
+//   - Eigen single-RHS and multiple-RHS benchmark runners.
+
 #pragma once
 
 #include "bench_types.hpp"
@@ -66,8 +76,9 @@ AccuracyResult compute_eigen_accuracy(const LUProblem& problem, const std::vecto
 //   solve timing, full-solve timing, accuracy checks, and memory checkpoints.
 // Why needed:
 //   Keeps Eigen-specific benchmark logic out of bench.cpp.
-void run_eigen_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results,
- std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results);
+void run_eigen_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results, 
+    std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results);
 
 // Runs the full Eigen benchmark suite.
 // What it does:
@@ -75,8 +86,9 @@ void run_eigen_case(const BenchmarkConfig& config, std::size_t n, MatrixType mat
 //   run_eigen_case for each case.
 // Why needed:
 //   Provides the top-level Eigen benchmark entry point called from bench.cpp.
-void run_eigen_benchmarks(const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results,
- std::vector<MemoryCheckpoint>& memory_results);
+void run_eigen_benchmarks(
+    const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, 
+    std::vector<MemoryCheckpoint>& memory_results);
 
 
  // Converts a column-major multiple-RHS block into an Eigen dense matrix.
@@ -104,8 +116,8 @@ std::vector<double> from_eigen_rhs_matrix(const Eigen::MatrixXd& X);
 // Why needed:
 //   Provides the Eigen baseline for multiple-RHS solve reuse.
 
-MultipleRHSResult benchmark_eigen_multiple_rhs_once(const LUProblem& problem, std::size_t nrhs, std::size_t trial,
- NormType norm, std::uint32_t seed, const BenchmarkConfig& config);
+MultipleRHSResult benchmark_eigen_multiple_rhs_once(
+    const LUProblem& problem, std::size_t nrhs, std::size_t trial, NormType norm, std::uint32_t seed, const BenchmarkConfig& config);
 
 
 // Runs one Eigen multiple-RHS benchmark case.
@@ -115,8 +127,9 @@ MultipleRHSResult benchmark_eigen_multiple_rhs_once(const LUProblem& problem, st
 // Why needed:
 //   Keeps Eigen multiple-RHS benchmark orchestration out of bench.cpp.
 
-void run_eigen_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results);
+void run_eigen_multiple_rhs_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, 
+    std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results);
 
 
  // Runs all Eigen multiple-RHS benchmarks.
@@ -125,5 +138,5 @@ void run_eigen_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, M
 //   config.rhs_counts.
 // Why needed:
 //   Provides the top-level Eigen multiple-RHS benchmark entry point.
-void run_eigen_multiple_rhs_benchmarks(const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, 
- std::vector<MemoryCheckpoint>& memory_results);
+void run_eigen_multiple_rhs_benchmarks(
+    const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results);

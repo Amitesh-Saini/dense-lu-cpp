@@ -1,10 +1,17 @@
-#include "bench_csv.hpp"
+// bench_csv.cpp
+// Purpose:
+//   Implement CSV writers for all benchmark result types.
+//
+// Implementation notes:
+//   - Keeps benchmark data collection separate from file-output formatting.
+//   - Writes stable column names for later plotting and analysis.
+//   - Converts enum fields into readable string labels before writing rows.
 
+#include "bench_csv.hpp"
 #include "bench_common.hpp"
 
 #include <fstream>
 #include <stdexcept>
-
 
 void write_timing_csv(const std::string& filename, const std::vector<TimingResult>& results)
 {

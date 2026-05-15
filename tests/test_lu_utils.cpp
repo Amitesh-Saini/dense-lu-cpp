@@ -1,3 +1,16 @@
+// test_lu_utils.cpp
+// Purpose:
+//   Implement reusable utilities used by the LU unit-test driver.
+//
+// Implementation notes:
+//   - Uses a fixed RNG seed for reproducible randomized tests.
+//   - Builds deterministic matrix families for edge-case testing.
+//   - Provides test runners that check residuals, solution error, and Eigen comparisons.
+
+#include "lu.hpp"
+#include "verify.hpp"
+#include "test_lu_utils.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <random>
@@ -6,24 +19,18 @@
 #include <string>
 #include <numeric>
 #include <cstddef>
-#include <vector>
+#include <algorithm>
 #include <Eigen/Dense>
+#include <stdexcept>
 
-
-#include "lu.hpp"
-#include "verify.hpp"
-#include "test_lu_utils.hpp"
-
-
+// Fixed seed keeps randomized tests reproducible across runs.
 static std::mt19937& test_rng()
 {
     static std::mt19937 gen(123456789);
     return gen;
 }
 
-
-
-
+// Helpers
 
 void matrix_vector_mul(const std::vector<double>& A, const std::vector<double>& x, std::vector<double>& b, std::size_t n){
 
@@ -84,8 +91,9 @@ double relative_inf_error(const std::vector<double>& x_true,
     return numerator_max / denominator_max;
 }
 
-std::vector<double> generate_random_dense_matrix(double lower_bound, double upper_bound, std::size_t n){
+// Generators
 
+std::vector<double> generate_random_dense_matrix(double lower_bound, double upper_bound, std::size_t n){
 
     std::uniform_real_distribution<double> dist(lower_bound, upper_bound);
     auto& gen = test_rng();
@@ -134,13 +142,19 @@ std::vector<double> generate_random_diagonally_dominant_matrix(double lower_boun
         }
 
         double sign = (dist(gen) < 0.0) ? -1.0 : 1.0;
+
+        // Make the diagonal larger than the sum of the off-diagonal magnitudes.
+        // This creates well-conditioned nonsingular test matrices for stable correctness checks.
         A[i*n+i] = sign * (non_diagonal_sum + margin);
     }
 
     return A;
 }
 
-bool run_known_solution(const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, double solution_tol){
+// Runners
+
+bool run_known_solution(
+    const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, double solution_tol){
     
     
     std::vector<double> LU = A;         
@@ -148,6 +162,7 @@ bool run_known_solution(const std::vector<double>& A, const std::vector<double>&
     std::vector<std::size_t> piv(n);
     std::vector<double> x_computed;
 
+    // Build b from a known x_true so the exact solution is known before solving.
     matrix_vector_mul(A, x_true, b, n);
 
     std::iota(piv.begin(), piv.end(), 0);
@@ -173,6 +188,8 @@ bool run_known_solution(const std::vector<double>& A, const std::vector<double>&
     double rel_l2  = relative_l2_error(x_true, x_computed, n);
     double rel_inf = relative_inf_error(x_true, x_computed, n);
 
+    // Require both factorization residuals and solve residuals to pass.
+    // Solution error is also checked because x_true is known.
     bool pass =
         factorization_inf  < residual_tol &&
         factorization_frob < residual_tol &&
@@ -196,6 +213,10 @@ bool run_known_solution(const std::vector<double>& A, const std::vector<double>&
 }
 
 bool run_residual_only(const std::vector<double>& A, const std::vector<double>& b, std::size_t n, double pivot_tol, double residual_tol){
+
+
+    // Used for ill-conditioned systems where the exact solution may be inaccurate
+    // even if the computed solution has a small backward residual.
 
     std::vector<double> LU = A;
     std::vector<std::size_t> piv(n);
@@ -228,6 +249,8 @@ bool run_expected_factorization_failure(const std::vector<double>& A,
 
     return LU_factorize(LU, piv, n, pivot_tol) != LU_factorize_Status::Success;
 }
+
+// Deterministic matrix builders
 
 std::vector<double> make_known_dense_3x3()
 {
@@ -362,8 +385,11 @@ std::vector<double> scale_matrix(std::vector<double> A, double s)
     return A;
 }
 
+// Use Eigen's PartialPivLU as an independent reference implementation.
 
-bool run_eigen_comparison(const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, double solution_tol, double eigen_compare_tol)
+bool run_eigen_comparison(
+    const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, 
+    double solution_tol, double eigen_compare_tol)
 {
     std::vector<double> LU = A;
     std::vector<double> b(n);
@@ -404,6 +430,8 @@ bool run_eigen_comparison(const std::vector<double>& A, const std::vector<double
     for(std::size_t i = 0; i < n; ++i) {
         x_eigen[i] = eigen_solution(static_cast<Eigen::Index>(i));
     }
+
+    // Compare both solvers against x_true and against each other.
 
     double my_l2              = relative_l2_error(x_true, x_my, n);
     double my_inf             = relative_inf_error(x_true, x_my, n);

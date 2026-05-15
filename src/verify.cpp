@@ -1,14 +1,28 @@
+// verify.cpp
+// Purpose:
+//   Implement verification utilities for LU factorization and solve accuracy.
+//
+// Implementation notes:
+//   - Computes matrix norms and residuals.
+//   - Verifies PA = LU factorization quality.
+//   - Verifies single-RHS and multiple-RHS solve accuracy.
+//   - Uses dense row-major storage consistent with the LU implementation.
+
 #include "verify.hpp"
 #include "lu.hpp"
+
 #include <cmath>
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <stdexcept>
+
+// Helpers
 
 void matmul(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, std::size_t n){
 
     if (n == 0) {
-    throw std::invalid_argument("matmul: n must be greater than 0");
+        throw std::invalid_argument("matmul: n must be greater than 0");
     }
 
     C.resize(n*n);
@@ -29,7 +43,7 @@ void matmul(const std::vector<double>& A, const std::vector<double>& B, std::vec
 void matsub(const std::vector<double>& A, const std::vector<double>& B, std::vector<double>& C, std::size_t n){
 
     if (n == 0) {
-    throw std::invalid_argument("matsub: n must be greater than 0");
+        throw std::invalid_argument("matsub: n must be greater than 0");
     }
 
     C.resize(n*n);
@@ -43,7 +57,7 @@ void apply_piv_rows(const std::vector<double>& A, const std::vector<std::size_t>
 
 
     if (n == 0) {
-    throw std::invalid_argument("apply_piv_rows: n must be greater than 0");
+        throw std::invalid_argument("apply_piv_rows: n must be greater than 0");
     }
 
     PA.resize(n*n);
@@ -59,7 +73,7 @@ void apply_piv_rows(const std::vector<double>& A, const std::vector<std::size_t>
 double fro_norm(const std::vector<double>& A, std::size_t n){
 
     if (n == 0) {
-    throw std::invalid_argument("fro_norm: n must be greater than 0");
+        throw std::invalid_argument("fro_norm: n must be greater than 0");
     }
 
     double sum = 0.0;
@@ -72,7 +86,7 @@ double fro_norm(const std::vector<double>& A, std::size_t n){
 double inf_norm(const std::vector<double>& A, std::size_t n){
 
     if (n == 0) {
-    throw std::invalid_argument("inf_norm: n must be greater than 0");
+        throw std::invalid_argument("inf_norm: n must be greater than 0");
     }
 
     double max = 0.0;
@@ -89,16 +103,16 @@ double inf_norm(const std::vector<double>& A, std::size_t n){
     return max;
 }
 
-void computeLU(const std::vector<double>& A, std::vector<double>& LU, std::size_t n){
+void compute_L_times_U(const std::vector<double>& A, std::vector<double>& LU, std::size_t n){
 
     if (n == 0) {
-    throw std::invalid_argument("computeLU: n must be greater than 0");
+        throw std::invalid_argument("compute_L_times_U: n must be greater than 0");
     }
 
-     double L = 0.0;
-     double U = 0.0;
+    double L = 0.0;
+    double U = 0.0;
 
-     LU.resize(n*n);
+    LU.resize(n*n);
 
    
     for(std::size_t i = 0; i < n; ++i){
@@ -125,22 +139,22 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, std::size_
 
 
 
- std::vector<double> extract_rhs_column(const std::vector<double>& B, std::size_t n, std::size_t nrhs, std::size_t rhs_index){
+std::vector<double> extract_rhs_column(const std::vector<double>& B, std::size_t n, std::size_t nrhs, std::size_t rhs_index){
 
     if (n == 0) {
-    throw std::invalid_argument("extract_rhs_column: n must be greater than 0");
+        throw std::invalid_argument("extract_rhs_column: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("extract_rhs_column: nrhs must be greater than 0");
+        throw std::invalid_argument("extract_rhs_column: nrhs must be greater than 0");
     }
 
     if (rhs_index >= nrhs) {
-    throw std::invalid_argument("extract_rhs_column: rhs_index out of range");
+        throw std::invalid_argument("extract_rhs_column: rhs_index out of range");
     }
 
     if (B.size() != n * nrhs) {
-    throw std::invalid_argument("extract_rhs_column: B size mismatch");
+        throw std::invalid_argument("extract_rhs_column: B size mismatch");
     }
 
     std::vector<double> b(n);
@@ -151,21 +165,21 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, std::size_
     }
 
     return b;
- }
+}
 
- void store_solution_column(std::vector<double>& X_computed, const std::vector<double>& x_computed, std::size_t n, std::size_t nrhs, std::size_t rhs_index){
+void store_solution_column(std::vector<double>& X_computed, const std::vector<double>& x_computed, std::size_t n, std::size_t nrhs, std::size_t rhs_index){
 
 
     if (n == 0) {
-    throw std::invalid_argument("store_solution_column: n must be greater than 0");
+        throw std::invalid_argument("store_solution_column: n must be greater than 0");
     }
 
     if (nrhs == 0) {
-    throw std::invalid_argument("store_solution_column: nrhs must be greater than 0");
+        throw std::invalid_argument("store_solution_column: nrhs must be greater than 0");
     }
 
     if (rhs_index >= nrhs) {
-    throw std::invalid_argument("store_solution_column: rhs_index out of range");
+        throw std::invalid_argument("store_solution_column: rhs_index out of range");
     }
 
     if (X_computed.size() != n * nrhs) {
@@ -184,20 +198,24 @@ void computeLU(const std::vector<double>& A, std::vector<double>& LU, std::size_
 
 
 
-double residual_factorization_debug(const std::vector<double>& A0, std::vector<double>& LU_Prod, 
-const std::vector<std::size_t>& piv, std::vector<double>& PA, const std::vector<double>& LU_fac,
- std::vector<double>& diff, std::size_t n, NormType norm){
+double residual_factorization_debug(
+    const std::vector<double>& A0, std::vector<double>& LU_Prod, const std::vector<std::size_t>& piv, std::vector<double>& PA, 
+    const std::vector<double>& LU_fac, std::vector<double>& diff, std::size_t n, NormType norm){
 
     if (n == 0) {
-    throw std::invalid_argument("residual_factorization_debug: n must be greater than 0");
+        throw std::invalid_argument("residual_factorization_debug: n must be greater than 0");
+    }
+
+    if(norm != NormType::Frobenius && norm != NormType::Infinity) {
+        throw std::invalid_argument("Norm not selected");
     }
     
-    apply_piv_rows(A0, piv, PA, n);
-    computeLU(LU_fac, LU_Prod, n);
+    apply_piv_rows(A0, piv, PA, n);                 // calculate P times A
+    compute_L_times_U(LU_fac, LU_Prod, n);          // calculate L times U
 
     diff.resize(n*n);
 
-    matsub(PA, LU_Prod, diff, n);
+    matsub(PA, LU_Prod, diff, n);       // PA - LU
 
     const double eps_abs = 1e-15;
     double denom = (norm== NormType::Infinity ? inf_norm(A0,n) : fro_norm(A0,n));
@@ -206,18 +224,24 @@ const std::vector<std::size_t>& piv, std::vector<double>& PA, const std::vector<
     if (denom <= eps_abs) {
         std::cout << "FAIL: ||A|| is zero or near zero; cannot compute meaningful relative residual.\n";
         return std::numeric_limits<double>::infinity();
-        }
+    }
 
     return num/denom;
 }
 
-double residual_factorization_fast(const std::vector<double>& A0, const std::vector<double>& LU_fac,
-const std::vector<std::size_t>& piv, std::size_t n, NormType norm){
+double residual_factorization_fast(
+    const std::vector<double>& A0, const std::vector<double>& LU_fac, const std::vector<std::size_t>& piv,
+    std::size_t n, NormType norm){
 
     if (n == 0) {
-    throw std::invalid_argument("residual_factorization_fast: n must be greater than 0");
+        throw std::invalid_argument("residual_factorization_fast: n must be greater than 0");
     }
 
+
+    if(norm != NormType::Frobenius && norm != NormType::Infinity) {
+        throw std::invalid_argument("Norm not selected");
+    }
+    
     double L = 0.0;
     double U = 0.0;
 
@@ -267,7 +291,7 @@ const std::vector<std::size_t>& piv, std::size_t n, NormType norm){
     if (denom <= eps_abs) {
         std::cout << "FAIL: ||A|| is zero or near zero; cannot compute meaningful relative residual.\n";
         return std::numeric_limits<double>::infinity();
-        }
+    }
 
     return num/denom;
 }
@@ -280,10 +304,12 @@ const std::vector<std::size_t>& piv, std::size_t n, NormType norm){
 // - Frobenius: ||b - A*x||_2   / ( ||A||_F   * ||x||_2   + ||b||_2   )
 //
 // Measures how well the computed solution x satisfies A*x = b.
-double residual_solve(const std::vector<double>& A0, const std::vector<double>& x, const std::vector<double>& b, std::size_t n, NormType norm) {
+double residual_solve(
+    const std::vector<double>& A0, const std::vector<double>& x, const std::vector<double>& b, 
+    std::size_t n, NormType norm) {
 
     if (n == 0) {
-    throw std::invalid_argument("residual_solve: n must be greater than 0");
+        throw std::invalid_argument("residual_solve: n must be greater than 0");
     }
 
 
@@ -345,23 +371,23 @@ double residual_solve(const std::vector<double>& A0, const std::vector<double>& 
         }
 
 
-         double denominator = (std::sqrt(A_sum) * std::sqrt(x_sum) + std::sqrt(b_sum));
+        double denominator = (std::sqrt(A_sum) * std::sqrt(x_sum) + std::sqrt(b_sum));
 
-         if(denominator <= eps_abs) return std::numeric_limits<double>::infinity();
+        if(denominator <= eps_abs) return std::numeric_limits<double>::infinity();
 
         return(std::sqrt(numerator) / denominator);
     }
 
 
     else{
-
         throw std::invalid_argument("Norm not selected");
     }
 }
 
 
-std::vector<double> multiple_rhs_solve_residuals(const std::vector<double>& A, const std::vector<double>& X_computed, const std::vector<double>& B,
- std::size_t n, std::size_t nrhs, NormType norm){
+std::vector<double> multiple_rhs_solve_residuals(
+    const std::vector<double>& A, const std::vector<double>& X_computed, const std::vector<double>& B, 
+    std::size_t n, std::size_t nrhs, NormType norm){
 
       if (n == 0) {
         throw std::invalid_argument("multiple_rhs_solve_residual: n must be greater than 0");
@@ -389,9 +415,6 @@ std::vector<double> multiple_rhs_solve_residuals(const std::vector<double>& A, c
     std::vector<double> x_computed(n);
     std::vector<double> b(n);
 
-    double max_residual = 0.0;
-
-
     for(std::size_t i = 0; i < nrhs; ++i){
 
         x_computed = extract_rhs_column(X_computed, n, nrhs, i);
@@ -403,4 +426,4 @@ std::vector<double> multiple_rhs_solve_residuals(const std::vector<double>& A, c
 
     return residual_values;
 
- }
+}

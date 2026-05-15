@@ -1,26 +1,12 @@
 // solve_demo.cpp
+// Purpose:
+//   Provide a minimal usage example for the custom LU solver.
 //
-// Minimal usage example for the custom LU solver.
-//
-// This file demonstrates two basic workflows:
-//
-//   Ex 1:
-//      Solve one dense linear system Ax = b.
-//
-//   Ex 2:
-//      Solve several systems with the same matrix A but different right-hand
-//      sides. This demonstrates LU factorization reuse: factor A once, then
-//      reuse the same LU factors for multiple RHS vectors.
-//
-// Matrix storage convention:
-//   The solver expects dense matrices in flat row-major storage.
-//   For an n x n matrix A, entry A(i,j) is stored at:
-//
-//      A[i * n + j]
-//
-// The helper make_row_major_matrix() is only used to make the example easier
-// to read. The actual LU solver still operates on flat std::vector<double>
-// matrices.
+// Implementation notes:
+//   - Demonstrates solving one dense system Ax = b.
+//   - Demonstrates factorization reuse for multiple right-hand sides.
+//   - Uses flat row-major matrix storage, matching the solver API.
+//   - Computes residuals and solution errors to verify the result.
 
 #include <cmath>
 #include <cstddef>
@@ -119,7 +105,7 @@ void print_vector(const std::string& name, const std::vector<double>& x)
 }
 
 
-// Print one RHS column stored in block-column layout:
+// Print one RHS vector stored in column-major multiple-RHS layout:
 // X[n * rhs_index + i].
 void print_rhs_column(const std::string& name, const std::vector<double>& X, std::size_t n, std::size_t rhs_index)
 {

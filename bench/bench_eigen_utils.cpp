@@ -1,5 +1,15 @@
-#include "bench_eigen_utils.hpp"
+// bench_eigen_utils.cpp
+// Purpose:
+//   Implement Eigen conversion helpers and Eigen benchmark routines.
+//
+// Implementation notes:
+//   - Converts the same generated benchmark problems into Eigen data structures.
+//   - Uses Eigen::PartialPivLU as a library baseline against the custom LU solver.
+//   - Measures Eigen factorization, solve, full solve, and multiple-RHS behavior.
+//   - Converts Eigen results back into std::vector form for shared residual checks.
 
+
+#include "bench_eigen_utils.hpp"
 #include "bench_common.hpp"
 #include "bench_generators.hpp"
 #include "verify.hpp"
@@ -277,10 +287,9 @@ AccuracyResult compute_eigen_accuracy(const LUProblem& problem, const std::vecto
 
 
 
-void run_eigen_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results,
- std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results){
-
-
+void run_eigen_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results, 
+    std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results){
 
     std::uint32_t seed = config.base_seed + static_cast<std::uint32_t>(trial) + static_cast<std::uint32_t>(1000 * n)
     + static_cast<std::uint32_t>(100000 * static_cast<int>(matrix_type));
@@ -356,9 +365,9 @@ void run_eigen_case(const BenchmarkConfig& config, std::size_t n, MatrixType mat
 
 
 
- void run_eigen_benchmarks(const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results,
- std::vector<MemoryCheckpoint>& memory_results){
-
+void run_eigen_benchmarks(
+    const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, 
+    std::vector<MemoryCheckpoint>& memory_results){
 
     for (const std::size_t n : config.sizes) {
 
@@ -374,8 +383,8 @@ void run_eigen_case(const BenchmarkConfig& config, std::size_t n, MatrixType mat
 
 
 
-MultipleRHSResult benchmark_eigen_multiple_rhs_once(const LUProblem& problem, std::size_t nrhs, std::size_t trial,
- NormType norm, std::uint32_t seed, const BenchmarkConfig& config){
+MultipleRHSResult benchmark_eigen_multiple_rhs_once(
+    const LUProblem& problem, std::size_t nrhs, std::size_t trial, NormType norm, std::uint32_t seed, const BenchmarkConfig& config){
 
 
     if (nrhs == 0) {
@@ -527,8 +536,9 @@ MultipleRHSResult benchmark_eigen_multiple_rhs_once(const LUProblem& problem, st
 
 
 
-void run_eigen_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results){
+void run_eigen_multiple_rhs_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<MultipleRHSResult>& multiple_rhs_results, 
+    std::vector<MemoryCheckpoint>& memory_results){
 
 
     if (n == 0) {
@@ -572,8 +582,8 @@ void run_eigen_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, M
  }
 
 
- void run_eigen_multiple_rhs_benchmarks(const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, 
- std::vector<MemoryCheckpoint>& memory_results){
+void run_eigen_multiple_rhs_benchmarks(
+    const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results){
 
     if (config.sizes.empty()) {
     throw std::invalid_argument("run_eigen_multiple_rhs_benchmarks: sizes must not be empty");

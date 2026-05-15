@@ -1,20 +1,20 @@
+// test_lu_utils.hpp
+// Purpose:
+//   Declare reusable utilities for LU unit tests.
+//
+// Contents:
+//   - Matrix/vector test helpers
+//   - Random matrix and vector generators
+//   - Deterministic test matrix builders
+//   - Test runners for known-solution, residual-only, failure, and Eigen-comparison cases
 
-#include <cmath>
-#include <iostream>
-#include <random>
-#include <iomanip>
-#include <vector>
-#include <string>
-#include <numeric>
-#include <cstddef>
-#include <vector>
+#pragma once
 
 #include "lu.hpp"
 #include "verify.hpp"
 
-
-#pragma once
-
+#include <cstddef>
+#include <vector>
 
 
 // Multiplies a dense n x n matrix A by a vector x and stores the result in b.
@@ -48,7 +48,8 @@ std::vector<double> generate_random_diagonally_dominant_matrix(double lower_boun
 // It forms b = A*x_true, factorizes A, solves Ax=b, then checks factorization residuals,
 // solve residuals, relative L2 solution error, and relative infinity solution error.
 // The default residual and solution tolerances are both 1e-10.
-bool run_known_solution(const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol = 1e-10, double solution_tol = 1e-10);
+bool run_known_solution(
+    const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol = 1e-10, double solution_tol = 1e-10);
 
 // Runs a residual-only solve test.
 // This is useful for ill-conditioned matrices such as Hilbert matrices, where the exact
@@ -126,4 +127,6 @@ std::vector<double> scale_matrix(std::vector<double> A, double s);
 // your solution vs x_true, Eigen's solution vs x_true, your solution vs Eigen,
 // your backward residual, and Eigen's backward residual.
 // Returns false if any residual or solution comparison exceeds its tolerance.
-bool run_eigen_comparison(const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, double solution_tol, double eigen_compare_tol);
+bool run_eigen_comparison(
+    const std::vector<double>& A, const std::vector<double>& x_true, std::size_t n, double pivot_tol, double residual_tol, 
+    double solution_tol, double eigen_compare_tol);

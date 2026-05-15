@@ -1,3 +1,14 @@
+// bench_common.hpp
+// Purpose:
+//   Declare shared benchmark helper functions used across the LU benchmark suite.
+//
+// Contents:
+//   - Enum-to-string conversion helpers for CSV output.
+//   - Timing helpers for benchmark measurements.
+//   - Process-memory measurement helpers.
+//   - FLOP estimates and GFLOP/s calculations.
+//   - Repetition-count helpers for stable benchmark timing.
+
 #pragma once
 
 #include "bench_types.hpp"
@@ -146,8 +157,9 @@ std::size_t current_process_memory_bytes();
 //   and after_residual.
 
 
-void record_memory_checkpoint(std::vector<MemoryCheckpoint>& checkpoints, Implementation implementation, BenchmarkPhase phase,
- MatrixType matrix_type, std::size_t n, std::size_t trial, const std::string& checkpoint);
+void record_memory_checkpoint(
+    std::vector<MemoryCheckpoint>& checkpoints, Implementation implementation, BenchmarkPhase phase, MatrixType matrix_type, 
+    std::size_t n, std::size_t trial, const std::string& checkpoint);
 
 
 

@@ -9,9 +9,13 @@
 //   - Detect singular/near-singular pivots and return failure.
 
 #include "lu.hpp"
+
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+
+
+// Helpers
 
 void Printarray(const std::vector<double>& array, std::size_t n){
 
@@ -40,7 +44,7 @@ void Printpiv(const std::vector<std::size_t>& array, std::size_t n){
 
         std::cout << array[i] << ",";
     }
-    std::cout << std::endl;
+    std::cout << std::endl; 
 }
 
 void rowswap(std::vector<double>& array, std::size_t rw_1, std::size_t rw_2, std::size_t n){
@@ -48,27 +52,11 @@ void rowswap(std::vector<double>& array, std::size_t rw_1, std::size_t rw_2, std
     for(std::size_t i = 0; i < n; i++) std::swap(at(array, n, rw_1, i), at(array, n, rw_2, i));
 }
 
-void identity_mat(std::vector<double>& array, std::size_t n){
-
-    for(std::size_t i = 0; i < n*n; i++){
-
-        if((i)%(n+1) == 0){
-            array[i] = 1;
-        }
-
-        else{
-            array[i] = 0;
-        }
-    }
-}
-
 bool pivot(std::vector<double>& array, std::vector<std::size_t>& piv, std::size_t rw, std::size_t n, double eps){
 
     std::size_t max_row = rw;
 
-    double max = std::abs(at(array, n, rw, rw));
-
-   // std::cout << max << "\n";
+    double max = std::abs(at(array, n, rw, rw));  // set max = |A[rw][rw]|
 
     for(std::size_t i = rw+1; i < n; i++){
 
@@ -80,10 +68,7 @@ bool pivot(std::vector<double>& array, std::vector<std::size_t>& piv, std::size_
         }
     }
 
-   // std::cout << max << "\n";
-    //std::cout << max_row_entry << "\n";
-
-    if(max <= eps) return false;
+    if(max <= eps) return false;  // check if pivot can cause instability
     if(max_row != rw){
 
         rowswap(array, rw, max_row, n);
@@ -94,14 +79,14 @@ bool pivot(std::vector<double>& array, std::vector<std::size_t>& piv, std::size_
 
 bool gaussian_eliminate(std::vector<double>& array, std::size_t rw, std::size_t n, double eps){
 
-    if(std::abs(at(array, n, rw, rw)) <= eps){             // check if pivot can cause instability
+    if(std::abs(at(array, n, rw, rw)) <= eps){                    // check if pivot can cause instability
         return false;
     }
 
     for(std::size_t i = rw+1; i < n; i++){
 
-        double mul = at(array, n, i, rw)/ at(array, n, rw, rw);
-        at(array, n, i, rw) = mul;
+        double mul = at(array, n, i, rw)/ at(array, n, rw, rw);   // Multiplier used to eliminate the entry below the pivot in column rw.
+        at(array, n, i, rw) = mul;                                // store mul at A[rw + 1][rw]
 
         for(std::size_t j = rw+1; j < n; j++){
 
@@ -133,8 +118,8 @@ LU_factorize_Status LU_factorize(std::vector<double>& array, std::vector<std::si
     return LU_factorize_Status::Success;
 }
 
-bool forward_substitution(const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& b,
-std::vector<double>& c, std::size_t n){
+bool forward_substitution(
+    const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& b, std::vector<double>& c, std::size_t n){
 
     if (n == 0) return false;
     if (LU.size() != n * n) return false;
@@ -144,16 +129,15 @@ std::vector<double>& c, std::size_t n){
     c.resize(n);
 
     for(std::size_t i = 0; i < n; ++i){
-        if (piv[i] >= n) return false;
+        if (piv[i] >= n) return false;            
 
         double sum = 0.0;
 
         for(std::size_t j = 0; j < i; ++j){
-
-            sum += c[j]*LU[i*n+j];
+            sum += c[j]*LU[i*n+j];  // sum = L[i][0] * c[0] + L[i][1] * c[1] + ... + L[i][i-1] * c[i-1] 
         }
 
-        c[i] = b[piv[i]] - sum;
+        c[i] = b[piv[i]] - sum;    // Apply the pivoted RHS and subtract the known L-row contribution.
     }
 
     return true;
@@ -167,16 +151,16 @@ bool back_substitution(const std::vector<double>& LU, const std::vector<double>&
 
     x.resize(n);
 
-    for(std::size_t i = n; i-- > 0; ){
+    for(std::size_t i = n; i-- > 0; ){   
 
         double sum = 0.0;
-        double diag = LU[i*n+i];
+        double diag = LU[i*n+i]; // LU[i][i] = coefficient of x[i]
 
-        if(std::abs(diag) <= eps) return false;
+        if(std::abs(diag) <= eps) return false;   // check instability 
 
         for(std::size_t j = i+1; j < n; ++j){
 
-            sum += LU[i*n+j] * x[j]; 
+            sum += LU[i*n+j] * x[j]; // U[i][i+1] * x[j] + U[i][i+2] * x[j+2] + ... + U[i][n-1] * x[n-1]
         }
 
         x[i] = (c[i] - sum)/diag;
@@ -185,8 +169,8 @@ bool back_substitution(const std::vector<double>& LU, const std::vector<double>&
     return true;
 }
 
-LU_Solve_Status LU_solve(const std::vector<double>& LU, const std::vector<std::size_t>& piv, 
- const std::vector<double>& b, std::vector<double>& x, std::size_t n, double eps){
+LU_Solve_Status LU_solve(
+    const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& b, std::vector<double>& x, std::size_t n, double eps){
 
     if(eps <= 0) return LU_Solve_Status::GeneralFailure;
     

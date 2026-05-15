@@ -1,5 +1,14 @@
-#include "bench_custom_lu.hpp"
+// bench_custom_lu.cpp
+// Purpose:
+//   Implement benchmark routines for the custom LU implementation.
+//
+// Implementation notes:
+//   - Separates factorization, solve, and full-solve timing.
+//   - Keeps residual and accuracy checks outside timed regions.
+//   - Records memory checkpoints around major benchmark stages.
+//   - Uses repeated kernel timings to reduce measurement noise.
 
+#include "bench_custom_lu.hpp"
 #include "bench_common.hpp"
 #include "bench_generators.hpp"
 #include "verify.hpp"
@@ -10,9 +19,9 @@
 #include <stdexcept>
 #include <vector>
 
-AccuracyResult compute_custom_lu_accuracy(const LUProblem& problem, const std::vector<double>& LU,
- const std::vector<std::size_t>& piv, const std::vector<double>& x_computed, 
- std::size_t trial, NormType norm, const std::string& status){
+AccuracyResult compute_custom_lu_accuracy(
+    const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, const std::vector<double>& x_computed, 
+    std::size_t trial, NormType norm, const std::string& status){
 
 
     AccuracyResult result;
@@ -73,8 +82,9 @@ TimingResult benchmark_custom_factorization_once(const LUProblem& problem, std::
     return result;
 }
 
- TimingResult benchmark_custom_solve_once(const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, std::size_t trial,
- const BenchmarkConfig& config){
+TimingResult benchmark_custom_solve_once(
+    const LUProblem& problem, const std::vector<double>& LU, const std::vector<std::size_t>& piv, std::size_t trial, 
+    const BenchmarkConfig& config){
 
 
     const std::size_t reps = checked_repetitions(
@@ -185,9 +195,9 @@ TimingResult benchmark_custom_full_solve_once(const LUProblem& problem, std::siz
 
 
 
-void run_custom_lu_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, 
- std::vector<MemoryCheckpoint>& memory_results){
+void run_custom_lu_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<TimingResult>& timing_results, 
+    std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results){
 
 
     std::uint32_t seed = config.base_seed + static_cast<std::uint32_t>(trial) + static_cast<std::uint32_t>(1000 * n)
@@ -285,10 +295,9 @@ void run_custom_lu_case(const BenchmarkConfig& config, std::size_t n, MatrixType
 
 
 
-void run_custom_lu_benchmarks(const BenchmarkConfig& config, std::vector<TimingResult>& timing_results,
- std::vector<AccuracyResult>& accuracy_results, std::vector<MemoryCheckpoint>& memory_results){
-
-    
+void run_custom_lu_benchmarks(
+    const BenchmarkConfig& config, std::vector<TimingResult>& timing_results, std::vector<AccuracyResult>& accuracy_results, 
+    std::vector<MemoryCheckpoint>& memory_results){
 
     for (const std::size_t n : config.sizes) {
 

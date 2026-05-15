@@ -1,7 +1,7 @@
 # plot_bench.py
 #
 # Purpose:
-#   Generate publication-quality plots from LU benchmark CSV files.
+#   Generate polished benchmark plots from LU benchmark CSV files.
 #   Applies a consistent HPC/scientific style: LaTeX-style fonts, tight axis
 #   formatting, reference complexity lines, and IEEEtran-compatible colour palette.
 #
@@ -162,6 +162,9 @@ def _save(ax: plt.Axes, filename: str) -> None:
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
+
+# Expected layout: data/benchmarks_main/, data/benchmarks_stress/,
+# data/benchmarks_hilbert/, data/benchmarks_multiple_rhs/, etc.
 
 def load_csvs(data_dir: Path = DATA_DIR) -> dict[str, pd.DataFrame]:
     """
@@ -366,7 +369,7 @@ def plot_accuracy_residuals_vs_n(data: dict[str, pd.DataFrame]) -> None:
 
     series = [
         ("factorization_residual", "Factorization residual"),
-        ("solve_residual",         r"Solve residual $\|Ax-b\|_\infty / \|b\|_\infty$"),
+        ("solve_residual", r"Solve residual $\|b-Ax\| / (\|A\|\|x\|+\|b\|)$"),
         ("solution_error_inf",     r"Forward error $\|x - x^*\|_\infty$"),
     ]
 
@@ -398,9 +401,8 @@ def plot_hilbert_solution_error(data: dict[str, pd.DataFrame]) -> None:
     Forward error on Hilbert matrices — demonstrates condition-number growth.
 
     A unit-error reference line (value = 1) is drawn to mark where the
-    solution is completely wrong; both solvers lose accuracy at the same rate
-    because the ill-conditioning is intrinsic to the Hilbert matrix, not to
-    the algorithm.
+    solution is completely wrong; Both solvers are affected because the loss of forward accuracy is driven
+    primarily by the ill-conditioning of the Hilbert matrix.
     """
     df = filter_success(data["hilbert_accuracy"])
     df = df[df["solution_error_inf"].notna() & (df["solution_error_inf"] > 0.0)]

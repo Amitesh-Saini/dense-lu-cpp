@@ -1,3 +1,14 @@
+// bench_generators.hpp
+// Purpose:
+//   Declare benchmark problem-generation utilities.
+//
+// Contents:
+//   - Matrix generators for random dense, diagonally dominant, Hilbert,
+//     pivot-stress, near-singular, and singular matrices.
+//   - Seeded vector generators for reproducible benchmark inputs.
+//   - LUProblem construction helpers.
+//   - Multiple-RHS setup and solution-error helpers.
+
 #pragma once
 
 #include "bench_types.hpp"
@@ -44,8 +55,8 @@ std::vector<double> generate_seeded_random_dense_matrix(double lower_bound, doub
 
 // creates random diagonally dominant dense matrix using seed
 
-std::vector<double> generate_seeded_random_diagonally_dominant_matrix(double lower_bound, double upper_bound, std::size_t n,
- double margin, std::uint32_t seed);
+std::vector<double> generate_seeded_random_diagonally_dominant_matrix(
+    double lower_bound, double upper_bound, std::size_t n, double margin, std::uint32_t seed);
 
 // generate random seeded vector 
 

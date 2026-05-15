@@ -5,35 +5,28 @@
 // What to test:
 //   - Factorization correctness via residual:
 //       ||P*A - L*U|| / ||A||
-//   - Solve correctness:
-//       ||A*x - b|| / ||b||
+//   - Solve correctness via backward residual:
+//       ||b - A*x|| / (||A||*||x|| + ||b||)
 //   - Edge cases:
 //       * singular matrices should fail factorization
 //       * small sizes (2x2, 3x3) with known answers
 //       * random matrices across several sizes
-//
-// Wire this into CTest via CMake.
-
-
-//cmake --build build
-//./build/test_lu
-
-
-#include <cmath>
-#include <iostream>
-#include <random>
-#include <iomanip>
-#include <vector>
-#include <string>
-#include <numeric>
+//   - Eigen comparison
 
 #include "test_lu_utils.hpp"
 #include "lu.hpp"
 #include "verify.hpp"
 
+#include <iostream>
+#include <vector>
+#include <string>
+#include <numeric>
+#include <cmath>
+
+
 int main()
 {
-    std::vector<std::string> failed_tests;
+    std::vector<std::string> failed_tests;   // Initialize array to hold which tests failed
 
     const double pivot_tol    = 1e-12;
     const double residual_tol = 1e-10;
@@ -41,11 +34,13 @@ int main()
 
     std::cout << "=== Running LU solver tests ===\n\n";
 
+    // Small deterministic correctness tests
+
     {
         std::vector<double> A = make_known_dense_3x3();
         std::vector<double> x_true = {2.0, 3.0, -1.0};
 
-        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("known_dense_3x3");
         }
     }
@@ -54,7 +49,7 @@ int main()
         std::vector<double> A = make_identity_matrix(3);
         std::vector<double> x_true = {1.0, -2.0, 4.0};
 
-        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("identity_3x3");
         }
     }
@@ -63,7 +58,7 @@ int main()
         std::vector<double> A = make_pivot_required_3x3();
         std::vector<double> x_true = {1.0, -1.0, 2.0};
 
-        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, 3, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("pivot_required_3x3");
         }
     }
@@ -71,16 +66,19 @@ int main()
     {
         std::vector<double> A = make_singular_repeated_row_3x3();
 
-        if(!run_expected_factorization_failure(A, 3, pivot_tol)) {
+        if(!run_expected_factorization_failure(A, 3, pivot_tol)){
             failed_tests.push_back("singular_repeated_row_3x3");
         }
     }
+
+
+    // Random diagonally dominant tests
 
     for(std::size_t n : {4, 8, 16, 32, 64, 128, 256}) {
         std::vector<double> A = generate_random_diagonally_dominant_matrix(-1.0, 1.0, n, 1.0);
         std::vector<double> x_true = generate_random_vector(-1.0, 1.0, n);
 
-        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("random_diagonally_dominant_n_" + std::to_string(n));
         }
     }
@@ -94,11 +92,14 @@ int main()
         }
     }
 
+
+    // Random dense tests
+
     for(std::size_t n : {4, 8, 16, 32, 64, 128}) {
         std::vector<double> A = generate_random_dense_matrix(-1.0, 1.0, n);
         std::vector<double> x_true = generate_random_vector(-1.0, 1.0, n);
 
-        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("random_dense_n_" + std::to_string(n));
         }
     }
@@ -107,95 +108,110 @@ int main()
         std::vector<double> A = generate_random_dense_matrix(-1.0, 1.0, n);
         std::vector<double> x_true = generate_random_vector(-1.0, 1.0, n);
 
-        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)) {
+        if(!run_known_solution(A, x_true, n, pivot_tol, residual_tol, solution_tol)){
             failed_tests.push_back("heavy_dense_n_" + std::to_string(n));
         }
     }
 
-    {
-    std::vector<double> A = make_singular_multiple_row_3x3();
 
-    if(!run_expected_factorization_failure(A, 3, pivot_tol)) {
-        failed_tests.push_back("singular_multiple_row_3x3");
+    // Singular and near-singular failure tests
+
+    {
+        std::vector<double> A = make_singular_multiple_row_3x3();
+
+        if(!run_expected_factorization_failure(A, 3, pivot_tol)){
+            failed_tests.push_back("singular_multiple_row_3x3");
         }
     }
 
     {
+        std::vector<double> A = make_near_singular_3x3();
+        std::vector<double> x_true = {1.0, 2.0, -1.0};
 
-    std::vector<double> A = make_near_singular_3x3();
-    std::vector<double> x_true = {1.0, 2.0, -1.0};
-
-    if(!run_known_solution(A, x_true, 3, pivot_tol, 1e-7, 1e-7)) {
-        failed_tests.push_back("near_singular_3x3");
+        if(!run_known_solution(A, x_true, 3, pivot_tol, 1e-7, 1e-7)){
+            failed_tests.push_back("near_singular_3x3");
         }
     }
 
     {
-    std::vector<double> A = make_zero_row_3x3();
+        std::vector<double> A = make_zero_row_3x3();
 
-    if(!run_expected_factorization_failure(A, 3, pivot_tol)) {
-        failed_tests.push_back("zero_row_3x3");
+        if(!run_expected_factorization_failure(A, 3, pivot_tol)){
+            failed_tests.push_back("zero_row_3x3");
         }
     }
 
     {
-    std::vector<double> A = make_zero_column_3x3();
+        std::vector<double> A = make_zero_column_3x3();
 
-    if(!run_expected_factorization_failure(A, 3, pivot_tol)) {
-        failed_tests.push_back("zero_column_3x3");
-         }
+        if(!run_expected_factorization_failure(A, 3, pivot_tol)){
+            failed_tests.push_back("zero_column_3x3");
+        }
     }
 
     {
-    std::vector<double> A = make_diagonal_4x4();
-    std::vector<double> x_true = {1.0, -2.0, 3.0, 0.5};
+        std::vector<double> A = make_diagonal_4x4();
+        std::vector<double> x_true = {1.0, -2.0, 3.0, 0.5};
 
-    if(!run_known_solution(A, x_true, 4, pivot_tol, residual_tol, solution_tol)) {
-        failed_tests.push_back("diagonal_4x4");
-       }
+        if(!run_known_solution(A, x_true, 4, pivot_tol, residual_tol, solution_tol)){
+            failed_tests.push_back("diagonal_4x4");
+        }
     }
 
     {
-    std::vector<double> A = make_upper_triangular_4x4();
-    std::vector<double> x_true = {2.0, -1.0, 0.5, 3.0};
+        std::vector<double> A = make_upper_triangular_4x4();
+        std::vector<double> x_true = {2.0, -1.0, 0.5, 3.0};
 
-    if(!run_known_solution(A, x_true, 4, pivot_tol, residual_tol, solution_tol)) {
-        failed_tests.push_back("upper_triangular_4x4");
+        if(!run_known_solution(A, x_true, 4, pivot_tol, residual_tol, solution_tol)){
+            failed_tests.push_back("upper_triangular_4x4");
         }
     }
 
     for(std::size_t n : {512, 1024}){
         auto A = generate_random_dense_matrix(-1.0, 1.0, n);
         auto x = generate_random_vector(-1.0, 1.0, n);
-        if(!run_known_solution(A, x, n, pivot_tol, /*residual_tol=*/1e-6, /*solution_tol=*/1e-6))
-            failed_tests.push_back("heavy_dense_n_relaxed_tol" + std::to_string(n));
+        if(!run_known_solution(A, x, n, pivot_tol, /*residual_tol=*/1e-6, /*solution_tol=*/1e-6)){
+            failed_tests.push_back("heavy_dense_n_relaxed_tol_" + std::to_string(n));
+        }
     }
 
+
+    // Edge/Stress Cases
+
+
     // 1×1 matrix – trivial boundary, must not crash or return wrong answer.
-    { auto A = make_1x1(7.5);
-      std::vector<double> x = {3.0};
-      if(!run_known_solution(A, x, 1, pivot_tol, residual_tol, solution_tol))
-          failed_tests.push_back("n1_trivial"); 
+    {
+        auto A = make_1x1(7.5);
+        std::vector<double> x = {3.0};
+        if(!run_known_solution(A, x, 1, pivot_tol, residual_tol, solution_tol)){
+            failed_tests.push_back("n1_trivial"); 
+        }
     }
  
     // 1×1 near-zero – should fail factorization.
-    { auto A = make_1x1(1e-14);
-      if(!run_expected_factorization_failure(A, 1, pivot_tol))
-          failed_tests.push_back("n1_near_zero_should_fail"); 
+    {   
+        auto A = make_1x1(1e-14);
+        if(!run_expected_factorization_failure(A, 1, pivot_tol)){
+            failed_tests.push_back("n1_near_zero_should_fail"); 
+        }
     }
  
     // Lower triangular – exercises forward substitution directly with no pivoting.
-    { auto A = make_lower_triangular_4x4();
-      std::vector<double> x = {1.0, -1.0, 2.0, 0.5};
-      if(!run_known_solution(A, x, 4, pivot_tol, residual_tol, solution_tol))
-          failed_tests.push_back("lower_triangular_4x4"); 
+    { 
+        auto A = make_lower_triangular_4x4();
+        std::vector<double> x = {1.0, -1.0, 2.0, 0.5};
+        if(!run_known_solution(A, x, 4, pivot_tol, residual_tol, solution_tol)){
+            failed_tests.push_back("lower_triangular_4x4"); 
+        }
     }
  
     // Permutation matrix – highly structured, maximum pivoting activity.
-    { auto A = make_permutation_4x4();
-      std::vector<double> x = {1.0, 2.0, 3.0, 4.0};
-      if(!run_known_solution(A, x, 4, pivot_tol, residual_tol, solution_tol))
-          failed_tests.push_back("permutation_4x4"); 
+    { 
+        auto A = make_permutation_4x4();
+        std::vector<double> x = {1.0, 2.0, 3.0, 4.0};
+        if(!run_known_solution(A, x, 4, pivot_tol, residual_tol, solution_tol)){
+            failed_tests.push_back("permutation_4x4"); 
+        }
     }
 
     // Hilbert matrices – canonical ill-conditioning benchmark.
@@ -208,10 +224,11 @@ int main()
         auto x  = std::vector<double>(n, 1.0);   // x_true = all-ones
         std::vector<double> b(n);
         matrix_vector_mul(H, x, b, n);
-        if(!run_residual_only(H, b, n, pivot_tol, /*residual_tol=*/1e-6))
+        if(!run_residual_only(H, b, n, pivot_tol, /*residual_tol=*/1e-6)){
             failed_tests.push_back("hilbert_n_" + std::to_string(n));
-        else
+        } else {
             std::cout << "  hilbert n=" << n << "  PASS\n";
+        }
     }
 
     // A correct relative residual formula is scale-invariant.
@@ -225,12 +242,13 @@ int main()
         for(double scale : {1e12, 1e-12}){
             auto A_scaled = scale_matrix(A_base, scale);
             // x_true is the same; b = A_scaled * x_true = scale * (A_base * x_true)
-            if(!run_known_solution(A_scaled, x_true, n, pivot_tol, residual_tol, solution_tol))
+            if(!run_known_solution(A_scaled, x_true, n, pivot_tol, residual_tol, solution_tol)){
                 failed_tests.push_back("scale_" + std::to_string((int)std::log10(scale)) + "_n8");
+            }
         }
     }
 
-    // ── NEW: multiple RHS vectors (one factorization, many solves) ───────
+    // Multiple RHS vectors (one factorization, many solves)
     //
     // This is how LU is used in practice.  We factorize once, then solve
     // for 5 different right-hand sides and verify each solution independently.
@@ -270,10 +288,11 @@ int main()
         std::vector<double> LU;
         std::vector<std::size_t> piv;
         auto status = LU_factorize(LU, piv, 0, pivot_tol);
-        if(status != LU_factorize_Status::GeneralFailure)
+        if(status != LU_factorize_Status::GeneralFailure){
             failed_tests.push_back("contract_n0");
-        else
+        } else {
             std::cout << "  n=0 -> GeneralFailure  PASS\n";
+        }
     }
 
     // Mismatched array size: LU.size() != n*n.
@@ -282,10 +301,11 @@ int main()
         std::vector<std::size_t> piv(3);
         std::iota(piv.begin(), piv.end(), 0);
         auto status = LU_factorize(LU, piv, 3, pivot_tol);
-        if(status != LU_factorize_Status::GeneralFailure)
+        if(status != LU_factorize_Status::GeneralFailure){
             failed_tests.push_back("contract_mismatched_size");
-        else
+        } else {
             std::cout << "  mismatched array size -> GeneralFailure  PASS\n";
+        }
     }
  
     // eps=0 must return GeneralFailure.
@@ -295,10 +315,11 @@ int main()
         std::vector<std::size_t> piv(3);
         std::iota(piv.begin(), piv.end(), 0);
         auto status = LU_factorize(LU, piv, 3, /*eps=*/0.0);
-        if(status != LU_factorize_Status::GeneralFailure)
+        if(status != LU_factorize_Status::GeneralFailure){
             failed_tests.push_back("contract_eps_zero");
-        else
+        } else {
             std::cout << "  eps=0 -> GeneralFailure  PASS\n";
+        }
     }
  
     // eps<0 must return GeneralFailure.
@@ -308,13 +329,12 @@ int main()
         std::vector<std::size_t> piv(3);
         std::iota(piv.begin(), piv.end(), 0);
         auto status = LU_factorize(LU, piv, 3, /*eps=*/-1.0);
-        if(status != LU_factorize_Status::GeneralFailure)
+        if(status != LU_factorize_Status::GeneralFailure){
             failed_tests.push_back("contract_eps_negative");
-        else
+        } else {
             std::cout << "  eps<0 -> GeneralFailure  PASS\n";
+        }
     }
-
-
 
     {
         std::cout << "\n[Eigen PartialPivLU comparison tests — diagonally dominant]\n";
@@ -335,22 +355,22 @@ int main()
         }
     }
 
-
     {
-    std::vector<double> LU;
-    std::vector<std::size_t> piv;
+        std::vector<double> LU;
+        std::vector<std::size_t> piv;
 
-    std::size_t bad_n = static_cast<std::size_t>(-1);
+        // Simulates an invalid signed-to-unsigned conversion.
+        // The solver should reject it because the input sizes do not match n*n.
 
-    auto status = LU_factorize(LU, piv, bad_n, pivot_tol);
+        std::size_t bad_n = static_cast<std::size_t>(-1);
 
-    if (status != LU_factorize_Status::GeneralFailure) {
-        failed_tests.push_back("contract_negative_n_converted_to_size_t");
+        auto status = LU_factorize(LU, piv, bad_n, pivot_tol);
+
+        if (status != LU_factorize_Status::GeneralFailure) {
+            failed_tests.push_back("contract_invalid_large_n");
+        } else {
+            std::cout << "  invalid large n -> GeneralFailure  PASS\n";
         }
-    else {
-        std::cout << "  negative n converted to size_t -> GeneralFailure  PASS\n";
-         }
-    
     }
 
     if(failed_tests.empty()) {

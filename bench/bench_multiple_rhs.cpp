@@ -1,5 +1,14 @@
-#include "bench_multiple_rhs.hpp"
+// bench_multiple_rhs.cpp
+// Purpose:
+//   Implement custom LU multiple-RHS benchmark routines.
+//
+// Implementation notes:
+//   - Demonstrates LU reuse: factorize A once, then solve many RHS vectors.
+//   - Separates factorization timing from RHS solve-loop timing.
+//   - Computes residuals and solution errors after timing.
+//   - Records timing, accuracy, and status fields for CSV output.
 
+#include "bench_multiple_rhs.hpp"
 #include "bench_common.hpp"
 #include "bench_generators.hpp"
 #include "verify.hpp"
@@ -9,10 +18,8 @@
 #include <stdexcept>
 #include <vector>
 
-
-
-MultipleRHSResult benchmark_custom_multiple_rhs_once(const LUProblem& problem, std::size_t nrhs, std::size_t trial,
- NormType norm, std::uint32_t seed, const BenchmarkConfig& config){
+MultipleRHSResult benchmark_custom_multiple_rhs_once(
+    const LUProblem& problem, std::size_t nrhs, std::size_t trial, NormType norm, std::uint32_t seed, const BenchmarkConfig& config){
 
 
     if (nrhs == 0) {
@@ -251,9 +258,9 @@ MultipleRHSResult benchmark_custom_multiple_rhs_once(const LUProblem& problem, s
 
 
 
-void run_custom_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial,
- std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results){
-
+void run_custom_multiple_rhs_case(
+    const BenchmarkConfig& config, std::size_t n, MatrixType matrix_type, std::size_t trial, std::vector<MultipleRHSResult>& multiple_rhs_results, 
+    std::vector<MemoryCheckpoint>& memory_results){
 
     if (n == 0) {
         throw std::invalid_argument("run_custom_multiple_rhs_case: n must be greater than 0");
@@ -298,8 +305,8 @@ void run_custom_multiple_rhs_case(const BenchmarkConfig& config, std::size_t n, 
 
 
 
- void run_custom_multiple_rhs_benchmarks(const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results,
- std::vector<MemoryCheckpoint>& memory_results){
+void run_custom_multiple_rhs_benchmarks(
+    const BenchmarkConfig& config, std::vector<MultipleRHSResult>& multiple_rhs_results, std::vector<MemoryCheckpoint>& memory_results){
 
     if (config.sizes.empty()) {
     throw std::invalid_argument("run_custom_multiple_rhs_benchmarks: sizes must not be empty");

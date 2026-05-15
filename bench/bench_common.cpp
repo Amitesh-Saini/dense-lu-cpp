@@ -1,5 +1,14 @@
-#include "bench_common.hpp"
+// bench_common.cpp
+// Purpose:
+//   Implement shared benchmark utilities used by all LU benchmark drivers.
+//
+// Implementation notes:
+//   - Converts benchmark enums into CSV-friendly strings.
+//   - Provides timing helpers based on std::chrono::steady_clock.
+//   - Measures current process memory on macOS, Linux, and Windows.
+//   - Estimates theoretical FLOP counts for LU factorization and triangular solves.
 
+#include "bench_common.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -17,8 +26,7 @@
 #endif
 
 
-// Implement string to string of enum clas types
-
+// Enum-to-string conversion helpers
 
 std::string to_string(MatrixType type) {
     switch (type) {
@@ -143,7 +151,7 @@ std::string to_string(LU_Solve_Status status) {
 }
 
 
-// Implement Benchmark Helpers
+// Timing helpers
 
 
 std::chrono::steady_clock::time_point benchmark_now(){
@@ -236,8 +244,9 @@ std::size_t current_process_memory_bytes()
 }
 
 
-void record_memory_checkpoint(std::vector<MemoryCheckpoint>& checkpoints, Implementation implementation,
- BenchmarkPhase phase, MatrixType matrix_type, std::size_t n, std::size_t trial, const std::string& checkpoint){
+void record_memory_checkpoint(
+    std::vector<MemoryCheckpoint>& checkpoints, Implementation implementation, BenchmarkPhase phase, MatrixType matrix_type, 
+    std::size_t n, std::size_t trial, const std::string& checkpoint){
 
     MemoryCheckpoint row;
     row.implementation = implementation;

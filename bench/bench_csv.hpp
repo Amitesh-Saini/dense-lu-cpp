@@ -1,3 +1,14 @@
+// bench_csv.hpp
+// Purpose:
+//   Declare CSV-writing utilities for benchmark outputs.
+//
+// Contents:
+//   - Timing CSV writer.
+//   - Accuracy CSV writer.
+//   - Memory CSV writer.
+//   - Residual timing CSV writer.
+//   - Multiple-RHS benchmark CSV writers.
+
 #pragma once
 
 #include "bench_types.hpp"

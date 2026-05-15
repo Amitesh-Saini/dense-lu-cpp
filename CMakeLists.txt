@@ -22,11 +22,11 @@ target_include_directories(lu_lib
 )
 
 # ---- Examples ----
-add_executable(lu_example
+add_executable(solve_demo
     examples/solve_demo.cpp
 )
 
-target_link_libraries(lu_example
+target_link_libraries(solve_demo
     PRIVATE
         lu_lib
 )

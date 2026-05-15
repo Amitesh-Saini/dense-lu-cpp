@@ -1,24 +1,12 @@
 // steady_heat_1d.cpp
+// Purpose:
+//   Demonstrate LU factorization reuse on a finite-difference 1D steady heat problem.
 //
-// Scientific-computing example for LU factorization reuse.
-//
-// This file discretizes the steady-state 1D heat equation,
-//     -u''(x) = f(x),  0 < x < 1,
-// with homogeneous Dirichlet boundary conditions,
-//     u(0) = 0,  u(1) = 0.
-//
-// A finite-difference discretization produces a linear system
-//     A u = f,
-// where A is the fixed discrete heat operator and f is a heat-source vector.
-//
-// The example builds A once, factors it once using LU with partial pivoting,
-// then reuses the same LU factors to solve for several different source terms.
-//
-// Important note:
-//   The finite-difference matrix for this 1D problem is tridiagonal/sparse.
-//   This demo stores it densely because the custom LU solver is a dense solver.
-//   In production, this specific 1D problem would normally use a tridiagonal
-//   or sparse solver. Here, the goal is to demonstrate LU reuse for multiple RHS.
+// Implementation notes:
+//   - Discretizes -u''(x) = f(x) on (0,1) with homogeneous Dirichlet boundaries.
+//   - Builds a dense finite-difference matrix for the custom dense LU solver.
+//   - Factors the matrix once and reuses the LU factors for multiple source terms.
+//   - Notes that a production version of this problem would normally use a tridiagonal or sparse solver.
 
 #include <cmath>
 #include <cstddef>

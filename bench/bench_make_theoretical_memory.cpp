@@ -1,3 +1,13 @@
+// bench_make_theoretical_memory.cpp
+// Purpose:
+//   Generate theoretical memory-usage CSV files for LU benchmark problem sizes.
+//
+// Implementation notes:
+//   - Computes expected memory from array sizes and scalar type sizes.
+//   - Estimates single-RHS and multiple-RHS storage requirements.
+//   - Writes results to CSV for comparison against measured process memory.
+//   - Does not run LU factorization; this is an analytical memory model.
+
 #include <cstddef>
 #include <exception>
 #include <filesystem>
@@ -18,7 +28,6 @@ double bytes_to_mb(std::size_t bytes)
 
 void write_single_rhs_memory_csv(const std::filesystem::path& output_path, const std::vector<std::size_t>& sizes){
 
-    
     std::filesystem::create_directories(output_path.parent_path());
 
     std::ofstream out(output_path);
