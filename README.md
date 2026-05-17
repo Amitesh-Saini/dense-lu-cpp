@@ -146,9 +146,13 @@ $$
 {\|A\|_\infty \|x'\|_\infty + \|b\|_\infty}.
 $$
 
-This is \(O(n^2)\), since it requires a matrix-vector product, and is cheap relative to factorization cost.
+**Relative forward error** — when a manufactured exact solution \(x\) is available, computes
 
-**Relative forward error** — when a manufactured exact solution $x$ is available, computes $\|x' - x\|_\infty / \|x\|_\infty$.
+$$
+\frac{\|x' - x\|_\infty}{\|x\|_\infty}.
+$$
+
+Here, \(x'\) denotes the computed solution and \(x\) denotes the manufactured exact solution.
 
 Together these three quantities distinguish the four qualitatively different failure modes: incorrect factorization, incorrect triangular solve, large forward error due to ill-conditioning (with small backward error), and explicit pivot failure.
 
@@ -158,7 +162,7 @@ Together these three quantities distinguish the four qualitatively different fai
 
 | Family | Purpose | Expected behavior |
 |---|---|---|
-| Random dense | General nonsingular baseline | Near-$\varepsilon_\text{mach}$ residuals, moderate forward error |
+| Random dense | General nonsingular baseline | Near machine-precision residuals, moderate forward error |
 | Diagonally dominant | Well-conditioned baseline | Cleaner than random; element growth is expected to remain controlled |
 | Pivot-stress | Verify row interchanges | Zero factorization residual; tests permutation path |
 | Hilbert | Severe ill-conditioning | Small backward error, large forward error; pivot failure at large $n$ |
@@ -213,7 +217,7 @@ the permutation vector, multiplier computation, and triangular factor storage
 are mutually consistent. A solver with incorrect permutation handling fails
 badly on these inputs.
 
-| n | CLU ‖PA−LU‖∞ | CLU solve residual | CLU forward error ‖x′−x*‖∞ / ‖x*‖∞ |
+| n | CLU ‖PA−LU‖∞ | CLU solve residual | CLU forward error ‖x′−x‖∞ / ‖x‖∞ |
 |---|---|---|---|
 | 8 | 0 | 0 | 0 |
 | 16 | 0 | 0 | 0 |
@@ -230,7 +234,7 @@ Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theo
 
 ![Accuracy and residuals vs n](plots/accuracy_residuals_vs_n.png)
 
-| n | CLU ‖PA−LU‖∞ | CLU solve residual (normalized) | CLU forward error ‖x′−x*‖∞ / ‖x*‖∞ |
+| n | CLU ‖PA−LU‖∞ | CLU solve residual (normalized) | CLU forward error ‖x′−x‖∞ / ‖x‖∞ |
 |---|---|---|---|
 | 8 | ~1.0×10⁻¹⁶ | ~5×10⁻¹⁷ | ~6×10⁻¹⁶ |
 | 16 | ~1.7×10⁻¹⁶ | ~9×10⁻¹⁷ | ~1.5×10⁻¹⁵ |
