@@ -15,7 +15,8 @@ A from-scratch dense direct solver implementing Gaussian elimination with partia
 7. [Building and Running](#7-building-and-running)
 8. [Limitations](#8-limitations)
 9. [Future Work](#9-future-work)
-10. [References](#10-references)
+10. [Issues and Feedback](#10-issues-and-feedback)
+11. [References](#11-references)
 
 ---
 
@@ -465,7 +466,16 @@ Run `bench_lu` before plotting.
 
 ---
 
-## 10. References
+## 10. Issues and Feedback
+
+If something in the build instructions, benchmark outputs, plots, documentation, or mathematical discussion does not work as expected, please open an issue on the repository.
+
+Corrections, suggestions, and feedback are welcome, especially regarding numerical accuracy, mathematical statements, benchmarking methodology, portability, or documentation clarity.
+
+
+---
+
+## 11. References
 
 [1] G. Dahlquist and Å. Björck, *Numerical Methods*. Dover Publications. — Primary reference for the LU existence theorem 5.3.1, backward error Theorems 5.5.1 and 5.5.2, growth factor bounds, and the practical residual criterion used throughout this project.
 
