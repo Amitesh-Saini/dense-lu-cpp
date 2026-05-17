@@ -57,12 +57,16 @@ where $a_{ij}^{(k)}$ denotes the $(i,j)$ entry of the matrix after $k$ steps of 
 
 The backward error analysis of Dahlquist and Björck gives the following bounds:
 
-> **Theorem 5.5.1 [1].** If $L$ and $U$ are the computed triangular factors of $A$ obtained by Gaussian elimination with partial or complete pivoting. Then if floating-point arithmetic with rounding unit $u$ has been used, then there exists a matrix $E$ satisfying
+> **Theorem 5.5.1 [1].** If $L$ and $U$ are the computed triangular factors of $A$ obtained by Gaussian elimination with partial or complete pivoting, using floating-point arithmetic with rounding unit $u$, then there exists a matrix $E$ satisfying
+>
 > $$\|E\|_\infty \leq k_1(n) \cdot u \cdot \|A\|_\infty, \qquad k_1(n) = n^2 g_n,$$
+>
 > such that $LU = A + E$.
 
-> **Theorem 5.5.2 [1].** If $x'$ is the computed solution of $Ax = b$ obtained by forward and backward substitution using the factors from Theorem 5.5, then there exists $\Delta A$ depending on $A$ and $b$ satisfying
+> **Theorem 5.5.2 [1].** If $x'$ is the computed solution of $Ax = b$ obtained by forward and backward substitution using the factors from Theorem 5.5.1, then there exists $\Delta A$ depending on $A$ and $b$ satisfying
+>
 > $$\|\Delta A\|_\infty \leq k_2(n) \cdot u \cdot \|A\|_\infty, \qquad k_2(n) = (n^3 + 3n^2) g_n,$$
+>
 > such that $(A + \Delta A)x' = b$.
 
 These theorems are the theoretical justification for the observed residual behavior in Section 6: a small solve residual means $x'$ solves a nearby perturbed system, and Theorem 5.5.2 quantifies how nearby in terms of $g_n$ and $u$.
