@@ -139,7 +139,14 @@ Three independent checks verify each factorization and solve:
 
 **Factorization residual** — explicitly forms $LU - PA$ and computes $\|PA - LU\|_\infty$. This is $O(n^3)$ (a dense matrix product) and is enabled only in validation and testing paths.
 
-**Solve residual** — computes $\|b - Ax'\|_\infty / (\|A\|_\infty \|x'\|_\infty + \|b\|_\infty)$. This is $O(n^2)$ (a matrix-vector product) and is cheap relative to factorization cost.
+**Solve residual** — computes the normalized residual
+
+$$
+\frac{\|b - Ax'\|_\infty}
+{\|A\|_\infty \|x'\|_\infty + \|b\|_\infty}.
+$$
+
+This is \(O(n^2)\), since it requires a matrix-vector product, and is cheap relative to factorization cost.
 
 **Relative forward error** — when a manufactured exact solution $x$ is available, computes $\|x' - x\|_\infty / \|x\|_\infty$.
 
@@ -206,7 +213,7 @@ the permutation vector, multiplier computation, and triangular factor storage
 are mutually consistent. A solver with incorrect permutation handling fails
 badly on these inputs.
 
-| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual | CLU forward error $\|x'-x\|_\infty / \|x\|_\infty$ |
+| n | CLU ‖PA−LU‖∞ | CLU solve residual | CLU forward error ‖x′−x*‖∞ / ‖x*‖∞ |
 |---|---|---|---|
 | 8 | 0 | 0 | 0 |
 | 16 | 0 | 0 | 0 |
@@ -223,7 +230,7 @@ Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theo
 
 ![Accuracy and residuals vs n](plots/accuracy_residuals_vs_n.png)
 
-| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual (normalized) | CLU forward error $\|x'-x\|_\infty / \|x\|_\infty$ |
+| n | CLU ‖PA−LU‖∞ | CLU solve residual (normalized) | CLU forward error ‖x′−x*‖∞ / ‖x*‖∞ |
 |---|---|---|---|
 | 8 | ~1.0×10⁻¹⁶ | ~5×10⁻¹⁷ | ~6×10⁻¹⁶ |
 | 16 | ~1.7×10⁻¹⁶ | ~9×10⁻¹⁷ | ~1.5×10⁻¹⁵ |
