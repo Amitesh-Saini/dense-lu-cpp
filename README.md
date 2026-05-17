@@ -89,7 +89,7 @@ $$\frac{\|\Delta x\|_\infty}{\|x\|_\infty} \leq \kappa_\infty(A) \frac{\|\Delta 
 
 with equality only for special right-hand sides. Combining with the backward error of Theorem 5.5.2:
 
-$$\frac{\|x - x'\|_\infty}{\|x\|_\infty} \lesssim \kappa_\infty(A) \cdot k_2(n) \cdot u \cdot \frac{\|A\|_\infty \|x'\|_\infty}{\|b\|_\infty}.$$
+$$\frac{\|x' - x\|_\infty}{\|x\|_\infty} \lesssim \kappa_\infty(A) \cdot k_2(n) \cdot u \cdot \frac{\|A\|_\infty \|x'\|_\infty}{\|b\|_\infty}.$$
 
 A small solve residual is necessary but not sufficient for a small forward error. If $\kappa_\infty(A)$ is large, the amplification factor overwhelms the small backward error and the forward error can be $O(1)$ or larger. This is the precise mechanism behind the Hilbert matrix experiments in Section 6.2.
 
@@ -136,7 +136,7 @@ Three independent checks verify each factorization and solve:
 
 **Solve residual** — computes $\|b - Ax'\|_\infty / (\|A\|_\infty \|x'\|_\infty + \|b\|_\infty)$. This is $O(n^2)$ (a matrix-vector product) and is cheap relative to factorization cost.
 
-**Relative forward error** — when a manufactured exact solution $x^*$ is available, computes $\|x' - x^*\|_\infty / \|x^*\|_\infty$.
+**Relative forward error** — when a manufactured exact solution $x$ is available, computes $\|x' - x\|_\infty / \|x\|_\infty$.
 
 Together these three quantities distinguish the four qualitatively different failure modes: incorrect factorization, incorrect triangular solve, large forward error due to ill-conditioning (with small backward error), and explicit pivot failure.
 
@@ -201,7 +201,7 @@ the permutation vector, multiplier computation, and triangular factor storage
 are mutually consistent. A solver with incorrect permutation handling fails
 badly on these inputs.
 
-| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual | CLU forward error $\|x'-x^*\|_\infty / \|x^*\|_\infty$ |
+| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual | CLU forward error $\|x'-x\|_\infty / \|x\|_\infty$ |
 |---|---|---|---|
 | 8 | 0 | 0 | 0 |
 | 16 | 0 | 0 | 0 |
@@ -218,7 +218,7 @@ Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theo
 
 ![Accuracy and residuals vs n](plots/accuracy_residuals_vs_n.png)
 
-| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual (normalized) | CLU forward error $\|x-x^*\|_\infty / \|x^*\|_\infty$ |
+| n | CLU $\|PA-LU\|_\infty$ | CLU solve residual (normalized) | CLU forward error $\|x'-x\|_\infty / \|x\|_\infty$ |
 |---|---|---|---|
 | 8 | ~1.0×10⁻¹⁶ | ~5×10⁻¹⁷ | ~6×10⁻¹⁶ |
 | 16 | ~1.7×10⁻¹⁶ | ~9×10⁻¹⁷ | ~1.5×10⁻¹⁵ |
