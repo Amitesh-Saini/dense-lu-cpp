@@ -370,7 +370,7 @@ def plot_accuracy_residuals_vs_n(data: dict[str, pd.DataFrame]) -> None:
     series = [
         ("factorization_residual", "Factorization residual"),
         ("solve_residual", r"Solve residual $\|b-Ax\|_\infty / (\|A\|_\infty\|x\|_\infty+\|b\|_\infty)$"),
-        ("solution_error_inf",     r"Forward error $\|x - x^*\|_\infty$"),
+        ("solution_error_inf",     r"Forward error $\|x - x^*\|_\infty / \|x^*\|_\infty$"),
     ]
 
     for col, label in series:
@@ -430,7 +430,7 @@ def plot_hilbert_solution_error(data: dict[str, pd.DataFrame]) -> None:
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
     ax.set_yscale("log")
     ax.set_xlabel("Matrix size $n$")
-    ax.set_ylabel(r"Median forward error $\|x - x^*\|_\infty$")
+    ax.set_ylabel(r"Median forward error $\|x - x^*\|_\infty / \|x^*\|_\infty$")
     ax.set_title("Hilbert Matrix — Forward Error vs. $n$")
     ax.legend()
 

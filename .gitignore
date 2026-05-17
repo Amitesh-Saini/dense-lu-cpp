@@ -1,23 +1,25 @@
 # Prerequisites
 *.d
 
-# Compiled Object files
+# Compiled object files
 *.slo
 *.lo
 *.o
 *.obj
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
 # Linker files
 *.ilk
 
-# Debugger Files
+# Debugger files
 *.pdb
+*.dwo
+*.dSYM/
 
-# Compiled Dynamic libraries
+# Compiled dynamic libraries
 *.so
 *.dylib
 *.dll
@@ -26,7 +28,7 @@
 *.mod
 *.smod
 
-# Compiled Static libraries
+# Compiled static libraries
 *.lai
 *.la
 *.a
@@ -38,17 +40,20 @@
 *.app
 
 # Local build executables with no extension
+solve_demo
 lu_example
 test_lu
 bench_lu
 
-# Debug information files
-*.dwo
-*.dSYM/
+# Local Windows executables, in case they are built outside build/
+solve_demo.exe
+lu_example.exe
+test_lu.exe
+bench_lu.exe
 
 # CMake / build directories
-/build/
-/out/build/
+build/
+out/build/
 cmake-build-*/
 
 # CMake generated files
@@ -68,6 +73,10 @@ Makefile
 
 # macOS files
 .DS_Store
+
+# Windows files
+Thumbs.db
+Desktop.ini
 
 # VS Code local settings
 .vscode/*
