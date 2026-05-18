@@ -181,7 +181,7 @@ Together these three quantities distinguish the four qualitatively different fai
 
 ## 5. Benchmark Methodology
 
-Timings are median over 5 independent trials. The custom implementation is referred to as **CLU**; Eigen's `PartialPivLU` as **EPLU**.
+Timings are medians over independent trials; trial counts vary by suite: 5 trials for the main performance and stress suites, 15 trials for the multiple-RHS suite, and 1 trial for the Hilbert, singular, and large-n suites. The custom implementation is referred to as **CLU**; Eigen's `PartialPivLU` as **EPLU**.
 
 | Operation | Flop count | Complexity |
 |---|---|---|
@@ -191,7 +191,7 @@ Timings are median over 5 independent trials. The custom implementation is refer
 | Solve residual check | $\sim 2n^2$ (matrix-vector) | $O(n^2)$ |
 | Dense matrix storage | $8n^2$ bytes | $O(n^2)$ |
 
-Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–256; a separate large-n run extends factorization timing to n = 2048.
+Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–512; a separate large-n run extends factorization timing to n = 2048.
 
 ### Benchmark Environment
 
@@ -322,7 +322,7 @@ The unblocked formulation has no analogous data reuse and is limited by memory b
 | 128 | ~0.015 | ~0.0032 | ~4.7× |
 | 256 | ~0.050 | ~0.011 | ~4.8× |
 
-Within the tested range (n = 8–256), CLU's single-RHS triangular solve is slower than EPLU's at every size, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×). The gap is consistent at 3–7×.
+Within the tested range (n = 8–512), CLU's single-RHS triangular solve is slower than EPLU's at every size, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×). The gap is consistent at 3–7×.
 
 CLU is slower here for the same structural reason as factorization: EPLU's triangular solve kernel is vectorized and optimized, while the custom solve is a plain scalar loop. **This result must not be extrapolated naively**: the ratio depends on hardware SIMD width and compiler auto-vectorization. In any case, this comparison is secondary: the triangular solve costs $2n^2$ flops while factorization costs $\frac{2}{3}n^3$. At n = 256, factorization takes ~1.2 ms and the solve takes ~0.050 ms — a ratio of approximately 24×. Solve performance has no material effect on end-to-end throughput for single-matrix problems.
 
