@@ -80,7 +80,7 @@ All residuals and errors in this project use the $\infty$-norm:
 
 $$\|x\|_\infty = \max_i |x_i|, \qquad \|A\|_\infty = \max_i \sum_j |a_{ij}|.$$
 
-The $\infty$-norm is chosen because it matches the norm used in the backward error bounds of Theorems 5.5.1 and 5.5.2, giving a direct connection between the measured residuals and the theoretical guarantees. Matrix norms satisfy submultiplicativity: $\|AB\|_\infty \leq \|A\|_\infty \|B\|_\infty$, ensuring that residual bounds compose correctly across the factorization and solve steps.
+The $\infty$-norm is chosen because it matches the norm used in the backward error bounds of Theorems 5.5.1 and 5.5.2, giving a direct connection between the measured residuals and the theoretical guarantees. Matrix norms satisfy submultiplicativity: $\|AB\|_\infty \le \|A\|_\infty \|B\|_\infty$, ensuring that residual bounds compose correctly across the factorization and solve steps.
 
 ### 1.5 Conditioning and Forward Error
 
@@ -104,7 +104,7 @@ Dahlquist and Björck note [1] that in many practical applications what matters 
 
 $$\|b - Ax'\|_\infty \leq k_2(n) \cdot u \cdot \|A\|_\infty \|x'\|_\infty,$$
 
-so Gaussian elimination with partial pivoting guarantees a small solve residual regardless of conditioning, provided $g_n$ is not pathologically large. The solve residuals in this project remain near $u \cdot \|A\|_\infty \|x'\|_\infty$ for all tested matrix families — including the Hilbert cases where CLU does not abort — confirming that the backward error is controlled. It is the forward error that reflects ill-conditioning.
+so Gaussian elimination with partial pivoting guarantees a small solve residual regardless of conditioning, provided $g_n$ is not pathologically large. The solve residuals in this project remain near $u \cdot \|A\|_\infty \|x'\|_\infty$ for all tested matrix families. For the Hilbert cases where CLU succeeds (n = 4 and n = 8), the solve residual stays near machine precision despite the severe ill-conditioning, confirming that the backward error is controlled even when the forward error is large. It is the forward error that reflects ill-conditioning.
 
 ---
 
@@ -117,6 +117,8 @@ Matrices are stored as flat `std::vector<double>` arrays using row-major indexin
 $$A_{ij} = \texttt{data}[i \cdot n + j].$$
 
 This gives a single contiguous memory allocation. A `std::vector<std::vector<double>>` representation would allocate each row on the heap separately, fragmenting the matrix across many allocations and degrading cache locality. Contiguous storage reduces TLB pressure, simplifies cache-line prediction, and matches the layout expected by BLAS and LAPACK routines.
+
+**Multiple right-hand sides.** When solving for $k$ right-hand side vectors simultaneously, $B$ and $X$ are packed as $n \times k$ matrices in **column-major** order — column $j$ occupies indices $nj$ to $nj + n - 1$ contiguously. This is intentionally different from the row-major layout used for $A$ and $LU$: each triangular solve processes one column at a time, so column-major storage makes each RHS vector contiguous in memory and matches the access pattern of the forward and backward substitution loops exactly.
 
 ### 2.2 In-Place Factorization
 
@@ -171,6 +173,8 @@ Together these three quantities distinguish the four qualitatively different fai
 **Diagonally dominant** matrices satisfy $|a_{ii}| > \sum_{j \neq i} |a_{ij}|$ for every row. For such matrices, Gaussian elimination is safe without pivoting — diagonal dominance is preserved through all elimination steps and $g_n$ is bounded. This project still uses partial pivoting as the general strategy; diagonally dominant cases serve as a clean correctness baseline.
 
 **Pivot-stress** matrices are constructed to require row interchanges at every step. Exact-zero factorization residuals on these cases confirm that the permutation vector is applied consistently across both the factorization and triangular solve paths — a solver without correct permutation handling fails badly on these inputs.
+
+**Hilbert** matrices $H_n$ have entries $H_{ij} = 1/(i+j-1)$. They are symmetric positive definite but severely ill-conditioned: $\kappa_\infty(H_n)$ grows exponentially with $n$, making them the standard stress test for forward error amplification. CLU succeeds at $n = 4$ and $n = 8$ before the pivot threshold is triggered at $n = 12$; EPLU continues to larger $n$ but produces a forward error exceeding 1 at $n = 16$. Both solvers maintain near-machine-precision solve residuals throughout, isolating the loss of accuracy as a conditioning effect rather than a backward error failure.
 
 ---
 
@@ -269,7 +273,7 @@ the forward error curve (green) is precisely the conditioning gap $\kappa_\infty
 
 At n = 4 and n = 8, both implementations agree closely and both exhibit rapidly growing forward error despite small solve residuals. This is the condition-number bound in action: the Hilbert matrix $H_n$ has $\kappa_\infty(H_n)$ that grows exponentially with $n$, so the forward error bound $\kappa_\infty(A) \cdot k_2(n) \cdot u$ exceeds 1 already at small $n$.
 
-From n = 12 onward, CLU aborts with pivot failure. EPLU continues; at n = 16 the forward error exceeds 1, and at n = 32 it reaches $O(1)$ — the computed solution is numerically meaningless. Both solvers maintain small solve residuals throughout (Theorem 5.5.2 guarantees this regardless of conditioning); it is the forward error that reveals the ill-conditioning. The choice to abort rather than silently return a meaningless result reflects the design principle that in verified scientific computing, an explicit failure is safer than an incorrect number.
+From n = 12 onward, CLU aborts with pivot failure. EPLU continues; at n = 16 the forward error exceeds 1, and at at n = 32 the forward error reaches ~7.6 — the computed solution is numerically meaningless. Both solvers maintain small solve residuals throughout (Theorem 5.5.2 guarantees this regardless of conditioning); it is the forward error that reveals the ill-conditioning. The choice to abort rather than silently return a meaningless result reflects the design principle that in verified scientific computing, an explicit failure is safer than an incorrect number.
 
 ### 6.3 Near-Singular Matrices
 
@@ -356,7 +360,9 @@ At n_rhs = 16, CLU solve-loop (0.793 ms) is approximately 10× slower than EPLU 
 | 128 | ~0.61 | ~0.59 | ~0.012 |
 | 256 | ~5.7 | ~5.65 | ~0.061 |
 
-The factorization residual check is $O(n^3)$: it explicitly forms $LU - PA$ via a dense matrix product and norms the result. At n = 256 this costs ~5.7 ms — approximately 4.75× the factorization time of ~1.2 ms. The debug and fast implementation variants have nearly identical cost, confirming that both paths perform the same dominant matrix-matrix work; implementation differences are negligible compared to the algorithmic cost.
+The factorization residual check is $O(n^3)$ in both variants. The debug implementation explicitly materialises $PA$ and $LU$ as separate $n \times n$ matrices, subtracts them, then norms the result — three passes over $O(n^2)$ memory. The fast implementation fuses these steps into a single loop, computing $(PA - LU)_{ij}$ entry by entry and accumulating the norm on the fly, avoiding the intermediate allocations. Despite this difference, both variants cost ~5.7 ms at $n = 256$ — approximately 4.75× the factorization time of ~1.2 ms — confirming that the $O(n^3)$ arithmetic dominates and the allocation overhead is negligible.
+
+The two variants also differ in peak memory. The debug implementation allocates three additional $n \times n$ matrices (`PA`, `LU_Prod`, and `diff`), adding $3 \times 8n^2$ bytes on top of the working set. At $n = 256$ this is an extra $3 \times 0.5$ MB = 1.5 MB. The fast implementation requires no additional allocations — it accumulates the norm incrementally using only a handful of scalar temporaries — making it suitable for memory-constrained environments or large $n$ where the extra allocations would be significant.
 
 The solve residual check is $O(n^2)$ and remains below 0.07 ms through n = 256. At n = 256 it costs ~0.061 ms — approximately 5% of factorization time — making it suitable for standard error reporting paths.
 
@@ -474,11 +480,11 @@ $$
 
 with panel width \(b\) chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-\(n\) factorization gap against EPLU.
 
-**Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked matrix-level triangular solve, analogous to BLAS `trsm`. This would address the current column-by-column RHS solve path and better match EPLU's per-RHS scaling for large \(n_\text{rhs}\) workloads.
+**Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked matrix-level triangular solve, analogous to BLAS `trsm`. This would address the current column-by-column RHS solve path and better match EPLU's per-RHS scaling for large $n_{\text{rhs}}$ workloads.
 
 **OpenMP parallelization** — after blocking, the trailing-matrix update becomes a natural target for shared-memory parallelism. Residual verification loops also parallelize cleanly because many of the operations are independent. Thread-scaling experiments would be a natural follow-on benchmark.
 
-**Iterative refinement** — compute a correction \(\Delta x\) by solving
+**Iterative refinement** — compute a correction $\Delta x$ by solving
 
 $$
 A\Delta x = r,
@@ -494,7 +500,7 @@ $$
 
 This would connect the Theorem 5.5.1/5.5.2 backward-error bounds more directly to forward-error improvement and provide a controlled setting for studying the relationship between backward error, conditioning, residuals, and forward error.
 
-**Incremental condition estimation** — replace the fixed pivot threshold with a more principled norm- or condition-estimation strategy. A LINPACK-style estimator for \(\kappa_\infty(A)\) would make the solver more diagnostically useful for arbitrary inputs and would provide a data-driven way to warn when the computed solution may be unreliable.
+**Incremental condition estimation** — replace the fixed pivot threshold with a more principled norm- or condition-estimation strategy. A LINPACK-style estimator for $\kappa_\infty(A)$ would make the solver more diagnostically useful for arbitrary inputs and would provide a data-driven way to warn when the computed solution may be unreliable.
 
 **PDE-driven linear systems** — a longer-term direction is applying the solver infrastructure to linear systems from finite difference or finite element discretizations. The factorization, residual verification, and benchmarking harness could be reused in implicit time-stepping schemes for model problems such as the heat equation or Poisson equation. This would connect the dense direct solver to broader scientific-computing projects involving PDEs, spectral methods, and finite-difference methods.
 
