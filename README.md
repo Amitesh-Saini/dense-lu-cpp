@@ -14,9 +14,10 @@ A from-scratch dense direct solver implementing Gaussian elimination with partia
 6. [Results](#6-results)
 7. [Building and Running](#7-building-and-running)
 8. [Limitations](#8-limitations)
-9. [Future Work](#9-future-work)
-10. [Issues and Feedback](#10-issues-and-feedback)
-11. [References](#11-references)
+9. [Examples](#9-examples)
+10. [Future Work](#10-future-work)
+11. [Issues and Feedback](#11-issues-and-feedback)
+12. [References](#12-references)
 
 ---
 
@@ -148,13 +149,13 @@ $$
 {\|A\|_\infty \|x'\|_\infty + \|b\|_\infty}.
 $$
 
-**Relative forward error** — when a manufactured exact solution \(x\) is available, computes
+**Relative forward error** — when a manufactured exact solution $x$ is available, computes
 
 $$
 \frac{\|x' - x\|_\infty}{\|x\|_\infty}.
 $$
 
-Here, \(x'\) denotes the computed solution and \(x\) denotes the manufactured exact solution.
+Here, $x'$ denotes the computed solution and $x$ denotes the manufactured exact solution.
 
 Together these three quantities distinguish the four qualitatively different failure modes: incorrect factorization, incorrect triangular solve, large forward error due to ill-conditioning (with small backward error), and explicit pivot failure.
 
@@ -190,7 +191,7 @@ Timings are median over 5 independent trials. The custom implementation is refer
 | Solve residual check | $\sim 2n^2$ (matrix-vector) | $O(n^2)$ |
 | Dense matrix storage | $8n^2$ bytes | $O(n^2)$ |
 
-Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–256; a separate large-n run extends factorization timing to n = 2048.
+Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–512; a separate large-n run extends factorization timing to n = 1024 and n = 2048.
 
 ### Benchmark Environment
 
@@ -381,7 +382,7 @@ These measurements make verification overhead explicit. In production numerical 
 | 256 | 1.008 | 1.100 |
 | 512 | 4.016 | — |
 
-Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision). At \(n = 256\), the modeled single-RHS footprint is approximately 1.008 MB. At \(n = 512\), one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.016 MB because the benchmark stores both the original matrix and the in-place LU matrix.
+Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision). At $n = 256$, the modeled single-RHS footprint is approximately 1.008 MB. At $n = 512$, one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.016 MB because the benchmark stores both the original matrix and the in-place LU matrix.
 
 Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligible relative to the $n \times n$ matrix: at n = 256, n_rhs = 16, the extra storage is approximately 0.092 MB versus 1.008 MB for the matrix itself.
 
@@ -462,13 +463,23 @@ Run `bench_lu` before plotting.
 
 **No condition number estimation.** $\kappa_\infty(A)$ is not estimated for arbitrary inputs; known ill-conditioned families (Hilbert matrices) serve as proxies. A LINPACK-style incremental condition estimator would make the solver diagnostically useful for arbitrary inputs.
 
-**Benchmark range.** Primary CSV data covers n = 8–256. Large-n factorization data (n = 512–2048) comes from a separate benchmark run and is presented via plots only; solve and multiple-RHS benchmarks are not available above n = 256.
+**Benchmark range.** Primary CSV data covers n = 8–512. Large-n factorization data (n = 1024–2048) comes from a separate benchmark run and is presented via plots only; solve and multiple-RHS benchmarks are not available above n = 256.
 
 **Platform-specific memory measurement.** The measured process-memory utility is implemented only for Windows, Linux, and macOS. The theoretical memory model is platform-independent, but measured RSS depends on operating-system APIs, allocator behavior, and page granularity.
 
 ---
 
-## 9. Future Work
+## 9. Examples 
+
+**`solve_demo`** walks through two cases on a small 3×3 system: a single-RHS solve with factorization residual, solve residual, and forward error reporting; then the same matrix solved against three RHS vectors simultaneously, demonstrating factorization reuse with per-RHS residual verification.
+
+**`steady_heat_1d`** applies the solver to a finite-difference discretisation of $-u''(x) = f(x)$ on $(0, 1)$ with homogeneous Dirichlet boundary conditions and $n = 256$ interior points. The tridiagonal system is factored once and solved for four source terms — $\sin(\pi x)$, $\sin(2\pi x)$, $x(1-x)$, and a Gaussian centred at $x = 0.5$ — demonstrating factorization reuse across multiple right-hand sides. Note that in production this problem would use a specialised tridiagonal solver; the dense LU solver is used here to demonstrate the API in a concrete scientific computing context.
+
+
+
+---
+
+## 10. Future Work
 
 Possible future directions for this project include several extensions in numerical linear algebra, high-performance computing, and scientific computing. These are not required for the current implementation, but they represent natural ways to extend the solver beyond the serial unblocked baseline.
 
@@ -478,7 +489,7 @@ $$
 A_{22} \leftarrow A_{22} - L_{21}U_{12}
 $$
 
-with panel width \(b\) chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-\(n\) factorization gap against EPLU.
+with panel width $b$ chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-$n$ factorization gap against EPLU.
 
 **Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked matrix-level triangular solve, analogous to BLAS `trsm`. This would address the current column-by-column RHS solve path and better match EPLU's per-RHS scaling for large $n_{\text{rhs}}$ workloads.
 
@@ -506,7 +517,7 @@ This would connect the Theorem 5.5.1/5.5.2 backward-error bounds more directly t
 
 ---
 
-## 10. Issues and Feedback
+## 11. Issues and Feedback
 
 If something in the build instructions, benchmark outputs, plots, documentation, or mathematical discussion does not work as expected, please open an issue on the repository.
 
@@ -515,7 +526,7 @@ Corrections, suggestions, and feedback are welcome, especially regarding numeric
 
 ---
 
-## 11. References
+## 12. References
 
 [1] G. Dahlquist and Å. Björck, *Numerical Methods*. Dover Publications. — Primary reference for the LU existence theorem 5.3.1, backward error Theorems 5.5.1 and 5.5.2, growth factor bounds, and the practical residual criterion used throughout this project.
 
