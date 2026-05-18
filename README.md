@@ -61,13 +61,13 @@ The backward error analysis of Dahlquist and Björck gives the following bounds:
 
 > **Theorem 5.5.1 [1].** If $L$ and $U$ are the computed triangular factors of $A$ obtained by Gaussian elimination with partial or complete pivoting, using floating-point arithmetic with rounding unit $u$, then there exists a matrix $E$ satisfying
 >
-> $$\|E\|_\infty \leq k_1(n) \cdot u \cdot \|A\|_\infty, \qquad k_1(n) = n^2 g_n,$$
+> $$\Vert E\Vert _\infty \leq k_1(n) \cdot u \cdot \Vert A\Vert _\infty, \qquad k_1(n) = n^2 g_n,$$
 >
 > such that $LU = A + E$.
 
 > **Theorem 5.5.2 [1].** If $x'$ is the computed solution of $Ax = b$ obtained by forward and backward substitution using the factors from Theorem 5.5.1, then there exists $\Delta A$ depending on $A$ and $b$ satisfying
 >
-> $$\|\Delta A\|_\infty \leq k_2(n) \cdot u \cdot \|A\|_\infty, \qquad k_2(n) = (n^3 + 3n^2) g_n,$$
+> $$\Vert \Delta A\Vert _\infty \leq k_2(n) \cdot u \cdot \Vert A\Vert _\infty, \qquad k_2(n) = (n^3 + 3n^2) g_n,$$
 >
 > such that $(A + \Delta A)x' = b$.
 
@@ -79,23 +79,23 @@ These theorems are the theoretical justification for the observed residual behav
 
 All residuals and errors in this project use the $\infty$-norm:
 
-$$\|x\|_\infty = \max_i |x_i|, \qquad \|A\|_\infty = \max_i \sum_j |a_{ij}|.$$
+$$\Vert x\Vert _\infty = \max_i |x_i|, \qquad \Vert A\Vert _\infty = \max_i \sum_j |a_{ij}|.$$
 
-The $\infty$-norm is chosen because it matches the norm used in the backward error bounds of Theorems 5.5.1 and 5.5.2, giving a direct connection between the measured residuals and the theoretical guarantees. Matrix norms satisfy submultiplicativity: $\|AB\|_\infty \le \|A\|_\infty \|B\|_\infty$, ensuring that residual bounds compose correctly across the factorization and solve steps.
+The $\infty$-norm is chosen because it matches the norm used in the backward error bounds of Theorems 5.5.1 and 5.5.2, giving a direct connection between the measured residuals and the theoretical guarantees. Matrix norms satisfy submultiplicativity: $\Vert AB\Vert _\infty \le \Vert A\Vert _\infty \Vert B\Vert _\infty$, ensuring that residual bounds compose correctly across the factorization and solve steps.
 
 ### 1.5 Conditioning and Forward Error
 
 The condition number in the $\infty$-norm is
 
-$$\kappa_\infty(A) = \|A\|_\infty \|A^{-1}\|_\infty.$$
+$$\kappa_\infty(A) = \Vert A\Vert _\infty \Vert A^{-1}\Vert _\infty.$$
 
 Note that $\kappa_\infty(A)$ is not generally known without computing $A^{-1}$ explicitly, which costs $O(n^3)$. For a perturbed right-hand side $b + \Delta b$, the forward error satisfies
 
-$$\frac{\|\Delta x\|_\infty}{\|x\|_\infty} \leq \kappa_\infty(A) \frac{\|\Delta b\|_\infty}{\|b\|_\infty},$$
+$$\frac{\Vert \Delta x\Vert _\infty}{\Vert x\Vert _\infty} \leq \kappa_\infty(A) \frac{\Vert \Delta b\Vert _\infty}{\Vert b\Vert _\infty},$$
 
 with equality only for special right-hand sides. Combining with the backward error of Theorem 5.5.2:
 
-$$\frac{\|x' - x\|_\infty}{\|x\|_\infty} \lesssim \kappa_\infty(A) \cdot k_2(n) \cdot u \cdot \frac{\|A\|_\infty \|x'\|_\infty}{\|b\|_\infty}.$$
+$$\frac{\Vert x' - x\Vert _\infty}{\Vert x\Vert _\infty} \lesssim \kappa_\infty(A) \cdot k_2(n) \cdot u \cdot \frac{\Vert A\Vert _\infty \Vert x'\Vert _\infty}{\Vert b\Vert _\infty}.$$
 
 A small solve residual is necessary but not sufficient for a small forward error. If $\kappa_\infty(A)$ is large, the amplification factor overwhelms the small backward error and the forward error can be $O(1)$ or larger. This is the precise mechanism behind the Hilbert matrix experiments in Section 6.2.
 
@@ -103,9 +103,9 @@ A small solve residual is necessary but not sufficient for a small forward error
 
 Dahlquist and Björck note [1] that in many practical applications what matters is not the forward error in $x'$ but whether $r = b - Ax'$ is small. Theorem 5.5.2 guarantees
 
-$$\|b - Ax'\|_\infty \leq k_2(n) \cdot u \cdot \|A\|_\infty \|x'\|_\infty,$$
+$$\Vert b - Ax'\Vert _\infty \leq k_2(n) \cdot u \cdot \Vert A\Vert _\infty \Vert x'\Vert _\infty,$$
 
-so Gaussian elimination with partial pivoting guarantees a small solve residual regardless of conditioning, provided $g_n$ is not pathologically large. The solve residuals in this project remain near $u \cdot \|A\|_\infty \|x'\|_\infty$ for all tested matrix families. For the Hilbert cases where CLU succeeds (n = 4 and n = 8), the solve residual stays near machine precision despite the severe ill-conditioning, confirming that the backward error is controlled even when the forward error is large. It is the forward error that reflects ill-conditioning.
+so Gaussian elimination with partial pivoting guarantees a small solve residual regardless of conditioning, provided $g_n$ is not pathologically large. The solve residuals in this project remain near $u \cdot \Vert A\Vert _\infty \Vert x'\Vert _\infty$ for all tested matrix families. For the Hilbert cases where CLU succeeds (n = 4 and n = 8), the solve residual stays near machine precision despite the severe ill-conditioning, confirming that the backward error is controlled even when the forward error is large. It is the forward error that reflects ill-conditioning.
 
 ---
 
@@ -132,7 +132,7 @@ Row permutations are tracked in a pivot index vector of length $n$ rather than a
 
 ### 2.3 Pivot Threshold
 
-The factorization aborts with `factorization_pivot_failure` if any pivot $|u_{kk}|$ falls below a configured absolute tolerance. This prevents silent propagation of division-by-near-zero through the remaining elimination steps. The threshold is a fixed constant; a more principled design would tie it to a running estimate of $\|A\|_\infty$ or an incremental condition estimate (see Section 9).
+The factorization aborts with `factorization_pivot_failure` if any pivot $|u_{kk}|$ falls below a configured absolute tolerance. This prevents silent propagation of division-by-near-zero through the remaining elimination steps. The threshold is a fixed constant; a more principled design would tie it to a running estimate of $\Vert A\Vert _\infty$ or an incremental condition estimate (see Section 9).
 
 ---
 
@@ -140,22 +140,22 @@ The factorization aborts with `factorization_pivot_failure` if any pivot $|u_{kk
 
 Three independent checks verify each factorization and solve:
 
-**Factorization residual** — explicitly forms $LU - PA$ and computes $\|PA - LU\|_\infty$. This is $O(n^3)$ (a dense matrix product) and is enabled only in validation and testing paths.
+**Factorization residual** — explicitly forms $LU - PA$ and computes $\Vert PA - LU\Vert _\infty$. This is $O(n^3)$ (a dense matrix product) and is enabled only in validation and testing paths.
 
 **Solve residual** — computes the normalized residual
 
 $$
-\frac{\|b - Ax'\|_\infty}
-{\|A\|_\infty \|x'\|_\infty + \|b\|_\infty}.
+\frac{\Vert b - Ax'\Vert _\infty}
+{\Vert A\Vert _\infty \Vert x'\Vert _\infty + \Vert b\Vert _\infty}.
 $$
 
-**Relative forward error** — when a manufactured exact solution $x$ is available, computes
+**Relative forward error** — when a manufactured exact solution \(x\) is available, computes
 
 $$
-\frac{\|x' - x\|_\infty}{\|x\|_\infty}.
+\frac{\Vert x' - x\Vert _\infty}{\Vert x\Vert _\infty}.
 $$
 
-Here, $x'$ denotes the computed solution and $x$ denotes the manufactured exact solution.
+Here, \(x'\) denotes the computed solution and \(x\) denotes the manufactured exact solution.
 
 Together these three quantities distinguish the four qualitatively different failure modes: incorrect factorization, incorrect triangular solve, large forward error due to ill-conditioning (with small backward error), and explicit pivot failure.
 
@@ -191,7 +191,7 @@ Timings are median over 5 independent trials. The custom implementation is refer
 | Solve residual check | $\sim 2n^2$ (matrix-vector) | $O(n^2)$ |
 | Dense matrix storage | $8n^2$ bytes | $O(n^2)$ |
 
-Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–512; a separate large-n run extends factorization timing to n = 1024 and n = 2048.
+Results are written to CSV and plotted with Python/Matplotlib. The primary CSV benchmark covers n = 8–256; a separate large-n run extends factorization timing to n = 2048.
 
 ### Benchmark Environment
 
@@ -382,7 +382,7 @@ These measurements make verification overhead explicit. In production numerical 
 | 256 | 1.008 | 1.100 |
 | 512 | 4.016 | — |
 
-Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision). At $n = 256$, the modeled single-RHS footprint is approximately 1.008 MB. At $n = 512$, one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.016 MB because the benchmark stores both the original matrix and the in-place LU matrix.
+Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision). At \(n = 256\), the modeled single-RHS footprint is approximately 1.008 MB. At \(n = 512\), one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.016 MB because the benchmark stores both the original matrix and the in-place LU matrix.
 
 Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligible relative to the $n \times n$ matrix: at n = 256, n_rhs = 16, the extra storage is approximately 0.092 MB versus 1.008 MB for the matrix itself.
 
@@ -459,11 +459,11 @@ Run `bench_lu` before plotting.
 
 **Serial execution.** No OpenMP, SIMD intrinsics, or GPU offload. A correct and benchmarked serial implementation is a prerequisite for any parallel extension; the current implementation serves this role.
 
-**Fixed pivot threshold.** The abort threshold is a compile-time constant rather than a function of $\|A\|_\infty$ or an incremental condition estimate. A principled threshold would scale with the matrix norm and connect directly to the Theorem 5.5.1/5.5.2 bounds.
+**Fixed pivot threshold.** The abort threshold is a compile-time constant rather than a function of $\Vert A\Vert _\infty$ or an incremental condition estimate. A principled threshold would scale with the matrix norm and connect directly to the Theorem 5.5.1/5.5.2 bounds.
 
 **No condition number estimation.** $\kappa_\infty(A)$ is not estimated for arbitrary inputs; known ill-conditioned families (Hilbert matrices) serve as proxies. A LINPACK-style incremental condition estimator would make the solver diagnostically useful for arbitrary inputs.
 
-**Benchmark range.** Primary CSV data covers n = 8–512. Large-n factorization data (n = 1024–2048) comes from a separate benchmark run and is presented via plots only; solve and multiple-RHS benchmarks are not available above n = 256.
+**Benchmark range.** Primary CSV data covers n = 8–256. Large-n factorization data (n = 512–2048) comes from a separate benchmark run and is presented via plots only; solve and multiple-RHS benchmarks are not available above n = 256.
 
 **Platform-specific memory measurement.** The measured process-memory utility is implemented only for Windows, Linux, and macOS. The theoretical memory model is platform-independent, but measured RSS depends on operating-system APIs, allocator behavior, and page granularity.
 
@@ -489,7 +489,7 @@ $$
 A_{22} \leftarrow A_{22} - L_{21}U_{12}
 $$
 
-with panel width $b$ chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-$n$ factorization gap against EPLU.
+with panel width \(b\) chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-\(n\) factorization gap against EPLU.
 
 **Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked matrix-level triangular solve, analogous to BLAS `trsm`. This would address the current column-by-column RHS solve path and better match EPLU's per-RHS scaling for large $n_{\text{rhs}}$ workloads.
 
