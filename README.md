@@ -226,6 +226,7 @@ badly on these inputs.
 | 128 | 0 | 0 | ~1.11×10⁻¹⁶ |
 | 256 | 0 | 0 | ~2.23×10⁻¹⁶ |
 
+
 Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theorem 5.5.1. The tested matrix families behave as if element growth is not the dominant source of error; residuals remain near machine precision on the successful cases. A future benchmark could explicitly measure $g_n$ to confirm whether element growth remains small across the tested matrix families.
 
 ---
@@ -236,13 +237,13 @@ Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theo
 
 | n | CLU ‖PA−LU‖∞ | CLU solve residual (normalized) | CLU forward error ‖x′−x‖∞ / ‖x‖∞ |
 |---|---|---|---|
-| 8 | ~1.0×10⁻¹⁶ | ~5×10⁻¹⁷ | ~6×10⁻¹⁶ |
-| 16 | ~1.7×10⁻¹⁶ | ~9×10⁻¹⁷ | ~1.5×10⁻¹⁵ |
-| 32 | ~2.5×10⁻¹⁶ | ~1.0×10⁻¹⁶ | ~4×10⁻¹⁵ |
-| 64 | ~6×10⁻¹⁶ | ~2×10⁻¹⁶ | ~1×10⁻¹⁴ |
-| 128 | ~9×10⁻¹⁶ | ~3×10⁻¹⁶ | ~3×10⁻¹³ |
-| 256 | ~1.5×10⁻¹⁵ | ~8×10⁻¹⁶ | ~2×10⁻¹³ |
-| 512 | ~3×10⁻¹⁵ | ~1.5×10⁻¹⁵ | ~2×10⁻¹² |
+| 8 | ~1.0×10⁻¹⁶ | ~5×10⁻¹⁷ | ~8×10⁻¹⁶ |
+| 16 | ~1.6×10⁻¹⁶ | ~9×10⁻¹⁷ | ~1.5×10⁻¹⁵ |
+| 32 | ~2.8×10⁻¹⁶ | ~1.1×10⁻¹⁶ | ~3.5×10⁻¹⁵ |
+| 64 | ~5.5×10⁻¹⁶ | ~1.6×10⁻¹⁶ | ~1.5×10⁻¹⁴ |
+| 128 | ~9.5×10⁻¹⁶ | ~3.5×10⁻¹⁶ | ~3×10⁻¹⁴ |
+| 256 | ~1.7×10⁻¹⁵ | ~8×10⁻¹⁶ | ~2×10⁻¹³ |
+| 512 | ~2.5×10⁻¹⁵ | ~1.5×10⁻¹⁵ | ~2×10⁻¹² |
 
 Factorization and solve residuals remain within a small multiple of ε_mach and grow
 slowly with n, consistent with the $k_1(n) = n^2 g_n$ factor in Theorem 5.5.1. The
@@ -259,12 +260,12 @@ the forward error curve (green) is precisely the conditioning gap $\kappa_\infty
 
 | n | CLU forward error | EPLU forward error | CLU status |
 |---|---|---|---|
-| 4 | ~3×10⁻¹³ | ~2×10⁻¹³ | success |
-| 8 | ~7×10⁻⁸ | ~7×10⁻⁸ | success |
-| 12 | — | ~5×10⁻² | pivot failure |
-| 16 | — | ~9×10⁻¹ | pivot failure |
-| 24 | — | ~1.5 | pivot failure |
-| 32 | — | ~3 | pivot failure |
+| 4 | ~7.6×10⁻¹⁴ | ~1.9×10⁻¹³ | success |
+| 8 | ~2.4×10⁻⁷ | ~1.8×10⁻⁷ | success |
+| 12 | — | ~4.9×10⁻³ | pivot failure |
+| 16 | — | ~1.9 | pivot failure |
+| 24 | — | ~5.4 | pivot failure |
+| 32 | — | ~7.6 | pivot failure |
 
 At n = 4 and n = 8, both implementations agree closely and both exhibit rapidly growing forward error despite small solve residuals. This is the condition-number bound in action: the Hilbert matrix $H_n$ has $\kappa_\infty(H_n)$ that grows exponentially with $n$, so the forward error bound $\kappa_\infty(A) \cdot k_2(n) \cdot u$ exceeds 1 already at small $n$.
 
@@ -282,23 +283,21 @@ CLU reports `factorization_pivot_failure` for all near-singular test cases at ev
 
 | n | CLU (ms) | EPLU (ms) | CLU/EPLU |
 |---|---|---|---|
-| 8 | 0.0014 | 0.0211 | 0.069× |
-| 16 | 0.0097 | 0.0729 | 0.133× |
-| 32 | 0.0626 | 0.1879 | 0.333× |
-| 64 | 0.470 | 0.765 | 0.615× |
-| 128 | 3.63 | 4.19 | 0.866× |
-| 256 | 28.7 | 22.5 | 1.274× |
-| 512† | ~230 | ~160 | ~1.44× |
-| 1024† | ~1700 | ~1100 | ~1.55× |
-| 2048† | ~14000 | ~9000 | ~1.56× |
+| 8 | ~0.00065 | ~0.00030 | ~2.2× |
+| 16 | ~0.0015 | ~0.00095 | ~1.6× |
+| 32 | ~0.0085 | ~0.0033 | ~2.6× |
+| 64 | ~0.040 | ~0.015 | ~2.7× |
+| 128 | ~0.15 | ~0.090 | ~1.7× |
+| 256 | ~1.2 | ~0.70 | ~1.7× |
+| 512† | ~10 | ~4.5 | ~2.2× |
+| 1024† | ~80 | ~35 | ~2.3× |
+| 2048† | ~700 | ~220 | ~3.2× |
 
-†From large-n benchmark run; primary CSV covers n = 8–256.
+†From large-n benchmark run; primary CSV covers n = 8–512.
 
 Both implementations follow $\frac{2}{3}n^3$ scaling: doubling n multiplies factorization time by approximately $8\times$ for n ≥ 64, matching the theoretical prediction.
 
-At n < 128, CLU is faster than EPLU. This is not an algorithmic advantage — it reflects EPLU's higher fixed per-call overhead: Eigen's expression template instantiation, internal dispatch, and thread-safety checks add costs that dominate when the matrix is small and the total flop count is a few thousand. Both implementations perform the same floating-point work at these sizes.
-
-The crossover is around n = 128–256. At n = 256, EPLU is 1.27× faster; at n = 2048 the gap stabilizes at approximately 1.56×. The source is structural:
+CLU is slower than EPLU at every tested size. At small n (8–32) the gap is driven by a combination of EPLU's fixed overhead and CLU's per-step bookkeeping; both implementations perform the same floating-point work but the absolute times are so small that overhead dominates the ratio. The gap stabilizes around 1.7× at n = 128–256 and grows again to ~3.2× at n = 2048. The source is structural:
 
 - **CLU (unblocked):** the trailing-matrix update at step $k$ is a sequence of rank-1 outer products, $a_{ij}^{(k+1)} \leftarrow a_{ij}^{(k)} - m_{ik} \cdot a_{kj}^{(k)}$ for $i,j > k$, executed as $n-k$ vector operations of length $n-k$. Each step touches $O((n-k)^2)$ memory with poor reuse.
 - **EPLU (blocked):** the same computation is reorganized into panel updates $A_{22} \leftarrow A_{22} - L_{21}U_{12}$, the dominant cost can be expressed as a BLAS-3-style matrix-matrix update. This form has a more favorable flop-to-byte ratio than repeated rank-1 updates and allows much better cache reuse.
@@ -311,18 +310,16 @@ The unblocked formulation has no analogous data reuse and is limited by memory b
 
 | n | CLU solve (ms) | EPLU solve (ms) | CLU/EPLU |
 |---|---|---|---|
-| 8 | 0.000502 | 0.00882 | 0.057× |
-| 16 | 0.00140 | 0.01736 | 0.081× |
-| 32 | 0.00419 | 0.03714 | 0.113× |
-| 64 | 0.01518 | 0.08554 | 0.178× |
-| 128 | 0.05901 | 0.21952 | 0.269× |
-| 256 | 0.23287 | 0.63114 | 0.369× |
+| 8 | ~0.00065 | ~0.00018 | ~3.6× |
+| 16 | ~0.0010 | ~0.00032 | ~3.1× |
+| 32 | ~0.0028 | ~0.00075 | ~3.7× |
+| 64 | ~0.0080 | ~0.0012 | ~6.7× |
+| 128 | ~0.015 | ~0.0032 | ~4.7× |
+| 256 | ~0.050 | ~0.011 | ~4.8× |
 
-Within the tested range (n = 8–256), CLU's single-RHS triangular solve is consistently faster than EPLU's measured solve step, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×).
+Within the tested range (n = 8–256), CLU's single-RHS triangular solve is slower than EPLU's at every size, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×). The gap is consistent at 3–7×.
 
-The CLU advantage at these sizes reflects the simpler dispatch path: the custom solve is a direct loop over the in-place LU storage with no expression template overhead. **This result must not be extrapolated to larger n**: EPLU uses highly optimized Eigen triangular-solve kernels, and depending on configuration may exploit vectorized or BLAS-like dense linear algebra paths.
-
-In any case, this comparison is secondary: the triangular solve costs $2n^2$ flops while factorization costs $\frac{2}{3}n^3$. At n = 256, factorization takes 28.7 ms and the solve takes 0.233 ms — a ratio of over 120×. Solve performance has no material effect on end-to-end throughput for single-matrix problems.
+CLU is slower here for the same structural reason as factorization: EPLU's triangular solve kernel is vectorized and optimized, while the custom solve is a plain scalar loop. **This result must not be extrapolated naively**: the ratio depends on hardware SIMD width and compiler auto-vectorization. In any case, this comparison is secondary: the triangular solve costs $2n^2$ flops while factorization costs $\frac{2}{3}n^3$. At n = 256, factorization takes ~1.2 ms and the solve takes ~0.050 ms — a ratio of approximately 24×. Solve performance has no material effect on end-to-end throughput for single-matrix problems.
 
 ### 6.6 Multiple Right-Hand Sides (n = 256)
 
@@ -334,17 +331,17 @@ In any case, this comparison is secondary: the triangular solve costs $2n^2$ flo
 
 | n_rhs | CLU solve-loop (ms) | EPLU solve-loop (ms) | CLU ms/RHS | EPLU ms/RHS |
 |---|---|---|---|---|
-| 1 | 0.235 | 0.683 | 0.235 | 0.683 |
-| 2 | 0.471 | 1.065 | 0.235 | 0.533 |
-| 4 | 0.942 | 1.237 | 0.235 | 0.309 |
-| 8 | 1.884 | 2.027 | 0.235 | 0.254 |
-| 16 | 3.769 | 3.725 | 0.236 | 0.233 |
+| 1 | 0.0496 | 0.0236 | 0.0496 | 0.0236 |
+| 2 | 0.0992 | 0.0333 | 0.0496 | 0.0166 |
+| 4 | 0.1982 | 0.0335 | 0.0496 | 0.00839 |
+| 8 | 0.3963 | 0.0460 | 0.0495 | 0.00575 |
+| 16 | 0.7931 | 0.0781 | 0.0496 | 0.00488 |
 
-CLU's time per RHS is constant at ~0.235 ms regardless of n_rhs, because each column is solved independently by sequential forward and backward substitution with no cross-column data reuse.
+CLU's time per RHS is flat at ~0.0496 ms regardless of n_rhs, because each column is solved independently by sequential forward and backward substitution with no cross-column data reuse.
 
-EPLU's time per RHS drops from 0.683 ms at n_rhs = 1 to 0.233 ms at n_rhs = 16, a 2.9× improvement. EPLU uses a matrix-level triangular solve strategy analogous to BLAS `trsm` for multiple RHS: all n_rhs columns are processed simultaneously as a dense matrix, reorganizing the computation into blocked matrix-matrix operations. The CLU column-by-column implementation cannot exploit this structure without a fundamentally different data access pattern. 
+EPLU's time per RHS drops from 0.0236 ms at n_rhs = 1 to 0.00488 ms at n_rhs = 16, a 4.8× improvement. EPLU uses a matrix-level triangular solve strategy analogous to BLAS `trsm` for multiple RHS: all n_rhs columns are processed simultaneously as a dense matrix, reorganizing the computation into blocked matrix-matrix operations. The CLU column-by-column implementation cannot exploit this structure without a fundamentally different data access pattern.
 
-Total solve-loop times converge at n_rhs = 16 (3.769 ms CLU vs. 3.725 ms EPLU) on this hardware. At larger n_rhs the EPLU advantage would grow. However, for all tested cases the factorization dominates total time: at n_rhs = 16, CLU total is 28.998 + 3.769 = 32.8 ms vs. EPLU 22.511 + 3.725 = 26.2 ms — a gap driven entirely by the factorization stage.
+At n_rhs = 16, CLU solve-loop (0.793 ms) is approximately 10× slower than EPLU (0.0781 ms). However, for all tested cases the factorization dominates total time: at n_rhs = 16, CLU total is 2.028 ms vs. EPLU 0.774 ms — a gap driven primarily by the factorization stage.
 
 ### 6.7 Residual Verification Cost
 
@@ -352,16 +349,16 @@ Total solve-loop times converge at n_rhs = 16 (3.769 ms CLU vs. 3.725 ms EPLU) o
 
 | n | Fact. residual — debug (ms) | Fact. residual — fast (ms) | Solve residual (ms) |
 |---|---|---|---|
-| 8 | 0.0042 | 0.0033 | 0.00065 |
-| 16 | 0.0214 | 0.0178 | 0.00193 |
-| 32 | 0.136 | 0.124 | 0.00720 |
-| 64 | 0.930 | 0.876 | 0.0273 |
-| 128 | 6.82 | 6.59 | 0.107 |
-| 256 | 52.2 | 51.3 | 0.425 |
+| 8 | ~0.00028 | ~0.00020 | ~0.000045 |
+| 16 | ~0.00125 | ~0.00105 | ~0.000110 |
+| 32 | ~0.0085 | ~0.0079 | ~0.00048 |
+| 64 | ~0.072 | ~0.069 | ~0.0027 |
+| 128 | ~0.61 | ~0.59 | ~0.012 |
+| 256 | ~5.7 | ~5.65 | ~0.061 |
 
-The factorization residual check is $O(n^3)$: it explicitly forms $LU - PA$ via a dense matrix product and norms the result. At n = 256 this costs 51–52 ms — nearly $2\times$ the factorization time of 28.7 ms. The debug and fast implementation variants have nearly identical cost, confirming that both paths perform the same dominant matrix-matrix work; implementation differences are negligible compared to the algorithmic cost.
+The factorization residual check is $O(n^3)$: it explicitly forms $LU - PA$ via a dense matrix product and norms the result. At n = 256 this costs ~5.7 ms — approximately 4.75× the factorization time of ~1.2 ms. The debug and fast implementation variants have nearly identical cost, confirming that both paths perform the same dominant matrix-matrix work; implementation differences are negligible compared to the algorithmic cost.
 
-The solve residual check is $O(n^2)$ and remains below 0.5 ms through n = 256. At n = 256 it costs 0.425 ms — less than 1.5% of factorization time — making it suitable for standard error reporting paths.
+The solve residual check is $O(n^2)$ and remains below 0.07 ms through n = 256. At n = 256 it costs ~0.061 ms — approximately 5% of factorization time — making it suitable for standard error reporting paths.
 
 These measurements make verification overhead explicit. In production numerical software, factorization residual checks are enabled only in testing, validation, or diagnostic modes; the solve residual check is cheap enough for normal use.
 
@@ -371,16 +368,16 @@ These measurements make verification overhead explicit. In production numerical 
 
 | n | Single RHS (MB) | 16-RHS (MB) |
 |---|---|---|
-| 8 | 0.0012 | 0.0041 |
-| 32 | 0.0166 | 0.0260 |
-| 64 | 0.0645 | 0.0896 |
+| 8 | 0.00122 | 0.00409 |
+| 32 | 0.0166 | 0.0281 |
+| 64 | 0.0645 | 0.0874 |
 | 128 | 0.254 | 0.300 |
 | 256 | 1.008 | 1.100 |
 | 512 | 4.016 | — |
 
-Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision).  At \(n = 256\), the modeled single-RHS footprint is approximately 1.0 MB. At \(n = 512\), one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.0 MB because the benchmark stores both the original matrix and the in-place LU matrix.
+Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ LU matrix ($8n^2$ bytes for double precision). At \(n = 256\), the modeled single-RHS footprint is approximately 1.008 MB. At \(n = 512\), one dense double-precision matrix alone occupies approximately 2 MB, while the modeled single-RHS footprint is approximately 4.016 MB because the benchmark stores both the original matrix and the in-place LU matrix.
 
-Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligible relative to the $n \times n$ matrix: at n = 256, n_rhs = 16, the extra storage is 0.25 MB versus 1.0 MB for the matrix itself.
+Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligible relative to the $n \times n$ matrix: at n = 256, n_rhs = 16, the extra storage is approximately 0.092 MB versus 1.008 MB for the matrix itself.
 
 Measured OS-level process RSS was approximately 2.5 MB throughout, flat across all matrix sizes, reflecting OS page allocation granularity and allocator overhead. The theoretical model is the authoritative measure of algorithmic storage complexity.
 
@@ -423,11 +420,13 @@ cmake --build build --config Release
 ```bash
 # Linux / macOS
 ./build/solve_demo      # worked example with residual output
+./build/steady_heat_1d  # solver applied to a 1D steady heat equation
 ./build/test_lu         # correctness and accuracy test suite
 ./build/bench_lu        # performance benchmarks; writes CSV to results/
 
 # Windows
 .\build\Release\solve_demo.exe
+.\build\Release\steady_heat_1d.exe
 .\build\Release\test_lu.exe
 .\build\Release\bench_lu.exe
 ```
@@ -435,9 +434,11 @@ cmake --build build --config Release
 ### Plot
 
 ```bash
-python3 scripts/plot_bench.py   # Linux / macOS
+python scripts/plot_bench.py    # Linux / macOS
 py scripts\plot_bench.py        # Windows
 ```
+
+Depending on your Python installation, this may need to be run as `python3 scripts/plot_bench.py` instead.
 
 Run `bench_lu` before plotting.
 
@@ -445,9 +446,9 @@ Run `bench_lu` before plotting.
 
 ## 8. Limitations
 
-**Unblocked factorization.** The trailing-matrix update is a sequence of rank-1 outer products with no BLAS-3 structure, making the implementation memory-bandwidth bound at large n. This is why EPLU is ~1.56× faster at n = 2048. Blocking is the primary performance gap to close.
+**Unblocked factorization.** The trailing-matrix update is a sequence of rank-1 outer products with no BLAS-3 structure, making the implementation memory-bandwidth bound at large n. This is why EPLU is ~3.2× faster at n = 2048. Blocking is the primary performance gap to close.
 
-**Column-by-column triangular solve.** Each RHS is solved independently with no cross-column data reuse, producing constant per-RHS time but missing the 2.9× per-RHS improvement EPLU achieves via blocked trsm for large n_rhs batches.
+**Column-by-column triangular solve.** Each RHS is solved independently with no cross-column data reuse, producing constant per-RHS time (~0.050 ms at n = 256) but missing the 4.8× per-RHS improvement EPLU achieves via blocked trsm for large n_rhs batches.
 
 **Serial execution.** No OpenMP, SIMD intrinsics, or GPU offload. A correct and benchmarked serial implementation is a prerequisite for any parallel extension; the current implementation serves this role.
 
@@ -463,17 +464,39 @@ Run `bench_lu` before plotting.
 
 ## 9. Future Work
 
-**Blocked LU factorization** — restructure the trailing-matrix update as $A_{22} \leftarrow A_{22} - L_{21}U_{12}$ with panel width $b$ chosen to match L2/L3 cache capacity, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the direct fix for the 1.56× factorization gap against EPLU.
+Possible future directions for this project include several extensions in numerical linear algebra, high-performance computing, and scientific computing. These are not required for the current implementation, but they represent natural ways to extend the solver beyond the serial unblocked baseline.
 
-**Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked trsm, matching EPLU's per-RHS scaling for large n_rhs batch workloads.
+**Blocked LU factorization** — restructure the trailing-matrix update as
 
-**OpenMP parallelization** — after blocking, the trailing-matrix dgemm call parallelizes cleanly across rows; residual verification loops also parallelize without synchronization. Thread-scaling experiments are a natural follow-on benchmark.
+$$
+A_{22} \leftarrow A_{22} - L_{21}U_{12}
+$$
 
-**Iterative refinement** — compute correction $\Delta x$ by solving $A\Delta x = r$ where $r = b - Ax'$, then update $x' \leftarrow x' + \Delta x$. This connects the Theorem 5.5.1/5.5.2 backward error bounds directly to forward error improvement and provides a controlled experimental setting for studying the backward-error / conditioning / forward-error triangle.
+with panel width \(b\) chosen to improve cache reuse, enabling a BLAS-3-style matrix-matrix update for the dominant computation. This is the approach used in LAPACK's `dgetrf` and is the most direct way to address the large-\(n\) factorization gap against EPLU.
 
-**Incremental condition estimation** — replace the fixed pivot threshold with a LINPACK-style norm estimator tracking $\kappa_\infty(A)$ during factorization, giving a data-driven stopping criterion tied directly to the Theorem 5.5.1 bound.
+**Matrix-level triangular solve (trsm)** — accumulate all RHS columns into a dense matrix and solve via a blocked matrix-level triangular solve, analogous to BLAS `trsm`. This would address the current column-by-column RHS solve path and better match EPLU's per-RHS scaling for large \(n_\text{rhs}\) workloads.
 
-**PDE-driven linear systems** — the solver infrastructure (factorization, residual verification, benchmarking harness) applies directly to linear systems from finite difference and finite element discretizations. A natural extension uses CLU as the direct solver within an implicit time-stepping scheme for the heat equation or Poisson equation, connecting this dense direct solver to the spectral and finite-difference projects that follow it.
+**OpenMP parallelization** — after blocking, the trailing-matrix update becomes a natural target for shared-memory parallelism. Residual verification loops also parallelize cleanly because many of the operations are independent. Thread-scaling experiments would be a natural follow-on benchmark.
+
+**Iterative refinement** — compute a correction \(\Delta x\) by solving
+
+$$
+A\Delta x = r,
+\qquad
+r = b - Ax',
+$$
+
+then update
+
+$$
+x' \leftarrow x' + \Delta x.
+$$
+
+This would connect the Theorem 5.5.1/5.5.2 backward-error bounds more directly to forward-error improvement and provide a controlled setting for studying the relationship between backward error, conditioning, residuals, and forward error.
+
+**Incremental condition estimation** — replace the fixed pivot threshold with a more principled norm- or condition-estimation strategy. A LINPACK-style estimator for \(\kappa_\infty(A)\) would make the solver more diagnostically useful for arbitrary inputs and would provide a data-driven way to warn when the computed solution may be unreliable.
+
+**PDE-driven linear systems** — a longer-term direction is applying the solver infrastructure to linear systems from finite difference or finite element discretizations. The factorization, residual verification, and benchmarking harness could be reused in implicit time-stepping schemes for model problems such as the heat equation or Poisson equation. This would connect the dense direct solver to broader scientific-computing projects involving PDEs, spectral methods, and finite-difference methods.
 
 ---
 

@@ -258,7 +258,7 @@ int main()
             MatrixType::DiagonallyDominant
         };
 
-        multiple_rhs_config.trials = 5;
+        multiple_rhs_config.trials = 15;
 
         // These are used by the multiple-RHS benchmark functions.
         multiple_rhs_config.factorization_repetitions = 1;
