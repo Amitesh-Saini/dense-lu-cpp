@@ -2,6 +2,9 @@
 
 A from-scratch dense direct solver implementing Gaussian elimination with partial pivoting in C++17. The implementation computes the factorization PA = LU, solves linear systems via forward and backward substitution, and is verified against a suite of structured matrix families. Performance is benchmarked against Eigen's `PartialPivLU` across matrix sizes up to n = 2048. The project studies numerical correctness, backward stability, conditioning effects, and computational scaling — grounded in the error analysis of Dahlquist and Björck [1].
 
+This is a deliberately serial, unblocked implementation: no external BLAS/LAPACK calls, no blocking, no SIMD intrinsics, and no threading. The project is the first in a planned sequence, and its purpose is to understand the numerical behavior of dense LU — pivoting, growth, backward error, conditioning — with every floating-point operation visible in the source, before any performance machinery obscures the algorithm. Eigen is used only as an external reference for correctness and performance comparison, not as a dependency of the solver itself.
+The performance consequences of these choices are quantified in Section 6 and discussed in Section 8; the optimizations intentionally deferred (blocked factorization, matrix-level triangular solves, OpenMP) are outlined in Section 10.
+
 ---
 
 ## Table of Contents
@@ -43,7 +46,7 @@ and rows $k$ and $r$ are swapped before the elimination multipliers are computed
 
 ### 1.2 Operation Count
 
-At elimination step $k$, the algorithm performs $n-k$ divisions (computing multipliers) and $(n-k)^2$ fused multiply-subtract operations (updating the trailing submatrix). Summing over $k = 1, \ldots, n-1$:
+At elimination step $k$, the algorithm performs $n-k$ divisions (computing multipliers) and $(n-k)^2$ multiply–subtract pairs operations (updating the trailing submatrix). Summing over $k = 1, \ldots, n-1$:
 
 $$\text{Factorization} = \frac{2}{3}n^3 + O(n^2) \text{ flops},$$
 
@@ -132,7 +135,7 @@ Row permutations are tracked in a pivot index vector of length $n$ rather than a
 
 ### 2.3 Pivot Threshold
 
-The factorization aborts with `factorization_pivot_failure` if any pivot $|u_{kk}|$ falls below a configured absolute tolerance. This prevents silent propagation of division-by-near-zero through the remaining elimination steps. The threshold is a fixed constant; a more principled design would tie it to a running estimate of $\Vert A\Vert _\infty$ or an incremental condition estimate (see Section 9).
+The factorization aborts with `factorization_pivot_failure` if any pivot $|u_{kk}|$ falls below a configured absolute tolerance. This prevents silent propagation of division-by-near-zero through the remaining elimination steps. The threshold is a fixed constant; a more principled design would tie it to a running estimate of $\Vert A\Vert _\infty$ or an incremental condition estimate (see Section 10).
 
 ---
 
@@ -181,7 +184,7 @@ Together these three quantities distinguish the four qualitatively different fai
 
 ## 5. Benchmark Methodology
 
-Timings are medians over independent trials; trial counts vary by suite: 5 trials for the main performance and stress suites, 15 trials for the multiple-RHS suite, and 1 trial for the Hilbert, singular, and large-n suites. The custom implementation is referred to as **CLU**; Eigen's `PartialPivLU` as **EPLU**.
+Each reported timing is the median over T independent trials, where each trial averages R consecutive kernel repetitions to suppress timer granularity and transient noise. For the main performance suite, T = 5 with R = 20 for factorization and R = 200 for triangular solves; the multiple-RHS suite uses T = 15 with R = 100; the Hilbert, singular, and large-n suites use a single trial with R = 1, since these measure numerical behavior rather than performance stability. All suites use fixed RNG seeds, so benchmark inputs are reproducible The custom implementation is referred to as **CLU**; Eigen's `PartialPivLU` as **EPLU**.
 
 | Operation | Flop count | Complexity |
 |---|---|---|
@@ -205,8 +208,8 @@ Benchmarks were run on:
 - Target: arm64-apple-darwin24.6.0
 - Build system: CMake 4.1.0
 - Build type: Release
+- Compiler flags: -O3 -DNDEBUG (CMake Release defaults; no architecture-specific or fast-math flags)
 - Eigen version: 5.0.1
-- Editor: Visual Studio Code
 
 Unless otherwise stated, timing results use a Release build.      
 
@@ -232,7 +235,7 @@ badly on these inputs.
 | 256 | 0 | 0 | ~2.23×10⁻¹⁶ |
 
 
-Forward error at n = 128 and n = 256 reaches ~2ε_mach —  consistent with Theorem 5.5.1. The tested matrix families behave as if element growth is not the dominant source of error; residuals remain near machine precision on the successful cases. A future benchmark could explicitly measure $g_n$ to confirm whether element growth remains small across the tested matrix families.
+Forward error at n = 128 and n = 256 reaches ~2ε_mach — consistent with the backward error bound of Theorem 5.5.2 combined with the conditioning bound of Section 1.5: these matrices are well-conditioned, so the small backward error translates directly into a small forward error. The tested matrix families behave as if element growth is not the dominant source of error; residuals remain near machine precision on the successful cases. A future benchmark could explicitly measure $g_n$ to confirm whether element growth remains small across the tested matrix families.
 
 ---
 
@@ -298,16 +301,16 @@ CLU reports `factorization_pivot_failure` for all near-singular test cases at ev
 | 1024† | ~80 | ~35 | ~2.3× |
 | 2048† | ~700 | ~220 | ~3.2× |
 
-†From large-n benchmark run; primary CSV covers n = 8–512.
+†From a separate large-n run (single measurement per size, for both CLU and EPLU); the primary 5-trial CSV covers n = 8–512
 
 Both implementations follow $\frac{2}{3}n^3$ scaling: doubling n multiplies factorization time by approximately $8\times$ for n ≥ 64, matching the theoretical prediction.
 
-CLU is slower than EPLU at every tested size. At small n (8–32) the gap is driven by a combination of EPLU's fixed overhead and CLU's per-step bookkeeping; both implementations perform the same floating-point work but the absolute times are so small that overhead dominates the ratio. The gap stabilizes around 1.7× at n = 128–256 and grows again to ~3.2× at n = 2048. The source is structural:
+At small n (8–32) absolute times are below 10 μs, so per-call overhead and timing noise dominate the ratio; EPLU's kernels are also vectorized even at these sizes, while CLU's loops are scalar. Both implementations perform the same floating-point work. but the absolute times are so small that overhead dominates the ratio. The gap stabilizes around 1.7× at n = 128–256 and grows again to ~3.2× at n = 2048. The source is structural:
 
 - **CLU (unblocked):** the trailing-matrix update at step $k$ is a sequence of rank-1 outer products, $a_{ij}^{(k+1)} \leftarrow a_{ij}^{(k)} - m_{ik} \cdot a_{kj}^{(k)}$ for $i,j > k$, executed as $n-k$ vector operations of length $n-k$. Each step touches $O((n-k)^2)$ memory with poor reuse.
 - **EPLU (blocked):** the same computation is reorganized into panel updates $A_{22} \leftarrow A_{22} - L_{21}U_{12}$, the dominant cost can be expressed as a BLAS-3-style matrix-matrix update. This form has a more favorable flop-to-byte ratio than repeated rank-1 updates and allows much better cache reuse.
 
-The unblocked formulation has no analogous data reuse and is limited by memory bandwidth at large n. At n = 512, the CLU matrix occupies $8 \times 512^2 \approx 2$ MB but the unblocked access pattern still generates many cache misses per elimination step as the working set changes at each column. Blocking is the targeted fix (Section 9). 
+The unblocked formulation has no analogous data reuse and is limited by memory bandwidth at large n. At n = 512, the CLU matrix occupies $8 \times 512^2 \approx 2$ MB but the unblocked access pattern still generates many cache misses per elimination step as the working set changes at each column. Blocking is the targeted fix (Section 10). 
 
 ### 6.5 Triangular Solve Timing — $2n^2$ Scaling
 
@@ -321,8 +324,9 @@ The unblocked formulation has no analogous data reuse and is limited by memory b
 | 64 | ~0.0080 | ~0.0012 | ~6.7× |
 | 128 | ~0.015 | ~0.0032 | ~4.7× |
 | 256 | ~0.050 | ~0.011 | ~4.8× |
+| 512 | ~0.209 | ~0.037 | ~5.6× |
 
-Within the tested range (n = 8–512), CLU's single-RHS triangular solve is slower than EPLU's at every size, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×). The gap is consistent at 3–7×.
+Within the tested range (n = 8–512), CLU's single-RHS triangular solve is slower than EPLU's at every size, with both following $O(n^2)$ scaling (doubling n multiplies solve time by ~4×). The gap ranges from ~3× to ~7×.
 
 CLU is slower here for the same structural reason as factorization: EPLU's triangular solve kernel is vectorized and optimized, while the custom solve is a plain scalar loop. **This result must not be extrapolated naively**: the ratio depends on hardware SIMD width and compiler auto-vectorization. In any case, this comparison is secondary: the triangular solve costs $2n^2$ flops while factorization costs $\frac{2}{3}n^3$. At n = 256, factorization takes ~1.2 ms and the solve takes ~0.050 ms — a ratio of approximately 24×. Solve performance has no material effect on end-to-end throughput for single-matrix problems.
 
@@ -386,13 +390,11 @@ Theoretical storage scales as $O(n^2)$, dominated by the in-place $n \times n$ L
 
 Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligible relative to the $n \times n$ matrix: at n = 256, n_rhs = 16, the extra storage is approximately 0.092 MB versus 1.008 MB for the matrix itself.
 
-Measured OS-level process RSS was approximately 2.5 MB throughout, flat across all matrix sizes, reflecting OS page allocation granularity and allocator overhead. The theoretical model is the authoritative measure of algorithmic storage complexity.
-
 ---
 
 ## 7. Building and Running
 
-**Requirements:** C++17 compiler, CMake ≥ 3.14, Eigen ≥ 3.4. Python ≥ 3.8 with Matplotlib for plots only.
+**Requirements:** C++17 compiler, CMake ≥ 3.20, Eigen ≥ 3.4 . Python ≥ 3.8 with Matplotlib for plots only.
 
 ### Build
 
@@ -457,13 +459,13 @@ Run `bench_lu` before plotting.
 
 **Column-by-column triangular solve.** Each RHS is solved independently with no cross-column data reuse, producing constant per-RHS time (~0.050 ms at n = 256) but missing the 4.8× per-RHS improvement EPLU achieves via blocked trsm for large n_rhs batches.
 
-**Serial execution.** No OpenMP, SIMD intrinsics, or GPU offload. A correct and benchmarked serial implementation is a prerequisite for any parallel extension; the current implementation serves this role.
+**Serial execution.**  A correct and benchmarked serial implementation is a prerequisite for any parallel extension; the current implementation serves this role.
 
-**Fixed pivot threshold.** The abort threshold is a compile-time constant rather than a function of $\Vert A\Vert _\infty$ or an incremental condition estimate. A principled threshold would scale with the matrix norm and connect directly to the Theorem 5.5.1/5.5.2 bounds.
+**Fixed pivot threshold.** The abort threshold is a fixed absolute constant rather than a function of $\Vert A\Vert _\infty$ or an incremental condition estimate. A principled threshold would scale with the matrix norm and connect directly to the Theorem 5.5.1/5.5.2 bounds.
 
 **No condition number estimation.** $\kappa_\infty(A)$ is not estimated for arbitrary inputs; known ill-conditioned families (Hilbert matrices) serve as proxies. A LINPACK-style incremental condition estimator would make the solver diagnostically useful for arbitrary inputs.
 
-**Benchmark range.** Primary CSV data covers n = 8–512. Large-n factorization data (n = 1024–2048) comes from a separate benchmark run and is presented via plots only; solve and multiple-RHS benchmarks are not available above n = 256.
+**Benchmark range.** Primary CSV data covers n = 8–512. Large-n factorization data (n = 1024–2048) comes from a separate benchmark run and is presented via plots only; multiple-RHS benchmarks are not available above n = 256.
 
 **Platform-specific memory measurement.** The measured process-memory utility is implemented only for Windows, Linux, and macOS. The theoretical memory model is platform-independent, but measured RSS depends on operating-system APIs, allocator behavior, and page granularity.
 
@@ -532,4 +534,4 @@ Corrections, suggestions, and feedback are welcome, especially regarding numeric
 
 [2] E. Anderson et al., *LAPACK Users' Guide*, 3rd ed. SIAM, 1999. — Reference for `dgetrf` (blocked LU with partial pivoting), `dtrsm` (matrix triangular solve), and `dgecon` (LINPACK-style condition estimation).
 
-[3] Eigen documentation, `Eigen::PartialPivLU`. https://eigen.tuxfamily.org — Reference implementation used for all performance and accuracy comparisons.
+[3] Eigen documentation, `Eigen::PartialPivLU`. https://libeigen.gitlab.io — Reference implementation used for all performance and accuracy comparisons.

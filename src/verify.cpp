@@ -80,6 +80,10 @@ double fro_norm(const std::vector<double>& A, std::size_t n){
 
     for(std::size_t i = 0; i < n*n; i++) sum += A[i]*A[i];
 
+    if(!std::isfinite(sum)){
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
     return std::sqrt(sum);
 }
 
@@ -96,6 +100,10 @@ double inf_norm(const std::vector<double>& A, std::size_t n){
         double sum = 0; 
 
         for(std::size_t j = 0; j < n; j++) sum += std::abs(A[i*n + j]);
+
+        if(!std::isfinite(sum)){
+            return std::numeric_limits<double>::quiet_NaN();
+        }
         
         if(sum > max) max = sum;
     }
@@ -281,6 +289,10 @@ double residual_factorization_fast(
 
         }
 
+        if(!std::isfinite(row_sum)){
+                return std::numeric_limits<double>::quiet_NaN();
+        }
+
         if(row_sum > max_row_sum) max_row_sum = (row_sum);
     }
 
@@ -334,6 +346,10 @@ double residual_solve(
                 A0_row_sum += std::abs(at(A0, n, i, j));
             }
 
+            if(!std::isfinite(x[i]) || !std::isfinite(b[i]) || !std::isfinite(Ax_i)){
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+
             if(std::abs(b[i] - Ax_i) > max_num_entry) max_num_entry = std::abs(b[i] - Ax_i);
             if(A0_row_sum > A_inf) A_inf = A0_row_sum;
             if(std::abs(x[i]) > max_x_entry) max_x_entry = std::abs(x[i]);
@@ -368,6 +384,10 @@ double residual_solve(
             x_sum += x[i] * x[i];
             b_sum += b[i] * b[i];
             numerator += (b[i] - Ax_i) * (b[i] - Ax_i);
+        }
+
+        if(!std::isfinite(numerator) || !std::isfinite(x_sum) || !std::isfinite(b_sum) || !std::isfinite(A_sum)){
+            return std::numeric_limits<double>::quiet_NaN();
         }
 
 
