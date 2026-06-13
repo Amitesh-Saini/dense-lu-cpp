@@ -399,7 +399,7 @@ Additional storage for multiple RHS ($8n \cdot n_\text{rhs}$ bytes) is negligibl
 ### Build
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Amitesh-Saini/dense-lu-cpp.git
 cd <repository-name>
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
